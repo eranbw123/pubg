@@ -118,7 +118,7 @@ foreach ($key in $results.Keys) { $checkArgs += @('--check', ("{0}={1}" -f $key,
     --tests-errors $errors --tests-skipped $skipped `
     --tests-command "pytest tests -q" `
     --open-question "Operator must confirm the doctor output matches this machine (display, Overwolf, PUBG paths)." `
-    --open-question "Overwolf is not installed on this host; Stage 1 is blocked until it is." `
+    --open-question "Overwolf developer mode cannot be observed by the doctor; Stage 1 reports the actual bridge load result (risk R-016)." `
     @checkArgs
 $reportOk = ($LASTEXITCODE -eq 0)
 

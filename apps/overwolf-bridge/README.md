@@ -34,5 +34,9 @@ generated from `src/pubg_training_bot/domain/bridge.py`.
 ## Prerequisites
 
 Overwolf installed with developer mode enabled, plus Node 20+ and pnpm
-(`corepack enable pnpm`). `pubg-bot doctor` reports all three. On this host
-Overwolf is **not** installed - see risk R-001.
+(`corepack enable pnpm`). `pubg-bot doctor` reports the Overwolf install, the
+Overwolf process and Node; it cannot observe developer mode, which is an
+application setting rather than a filesystem fact (risk R-016).
+
+On this host: Overwolf installed and running, Node 24 present, **pnpm still
+missing**.

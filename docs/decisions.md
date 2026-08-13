@@ -145,16 +145,38 @@ packages (`navigation`, `recovery`, `recording`, ...) do not exist yet.
 
 ---
 
-## D-012 - Overwolf is not installed on this host
-**Stage 00 | active - blocks Stage 01**
+## D-012 - Overwolf install status
+**Stage 00 | superseded by D-013**
 
-Checked at `%LOCALAPPDATA%\Overwolf`, `%ProgramFiles(x86)%\Overwolf` and
-`%ProgramFiles%\Overwolf`: absent. PUBG **is** installed at
+Initially observed absent from all three standard locations
+(`%LOCALAPPDATA%\Overwolf`, `%ProgramFiles(x86)%\Overwolf`,
+`%ProgramFiles%\Overwolf`), which blocked Stage 1. PUBG was already installed at
 `C:\Program Files (x86)\Steam\steamapps\common\PUBG`.
 
-Stage 1 cannot begin until Overwolf is installed with developer mode enabled.
-`doctor` reports this as a warning with the remedy attached; it is not a Stage 0
-failure because Stage 0 does not touch the game. Recorded as risk R-001.
+Resolved during Stage 0 - see D-013.
+
+---
+
+## D-013 - Overwolf installed; Stage 1 prerequisite satisfied
+**Stage 00 | active**
+
+Overwolf is now installed at `%LOCALAPPDATA%\Overwolf` and `Overwolf.exe` is
+running. `doctor` detects both the install path and the process, so risk R-001
+is retired.
+
+Two prerequisites remain before Stage 1 can start, and both are environmental
+rather than code:
+
+- **Developer mode** must be enabled in Overwolf (Settings -> About -> Development
+  Options) so an unpacked app can be loaded. `doctor` cannot observe this - it is
+  an application setting, not a filesystem or process fact - so Stage 1's own
+  check script will report the load result rather than guessing.
+- **pnpm** is still missing (`corepack enable pnpm`), needed for the bridge
+  workspace.
+
+Detection deliberately remains path- and process-based rather than reading
+Overwolf's own configuration: the doctor is read-only and must not depend on
+another application's private file layout.
 
 ---
 

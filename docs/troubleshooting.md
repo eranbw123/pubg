@@ -29,8 +29,16 @@ version and network access rather than installing a compiler.
 ## Doctor output
 
 **`overwolf install: not found`**
-Expected on this host (R-001). Install Overwolf and enable developer mode before
-Stage 1. Not a Stage 0 failure.
+Install Overwolf and enable developer mode before Stage 1. Not a Stage 0
+failure, since Stage 0 does not touch the game. If Overwolf is installed
+somewhere unusual, add the path to `OVERWOLF_PATH_CANDIDATES` in
+`src/pubg_training_bot/diagnostics/probes.py`.
+
+**`overwolf install` is `ok` but the bridge will not load (Stage 1)**
+Installing Overwolf is not the same as enabling developer mode. Enable it under
+Settings -> About -> Development Options, then load the unpacked app. The doctor
+cannot check this - it is an application setting, not a filesystem fact
+(risk R-016).
 
 **`pubg install: not found`**
 The Steam library is somewhere unusual. Add the path to `PUBG_PATH_CANDIDATES`

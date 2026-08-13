@@ -9,32 +9,43 @@ Status values: `open`, `retired`, `realised`, `accepted`.
 
 | ID | Risk | Likelihood | Impact | Rank | Stage | Status |
 | --- | --- | --- | --- | --- | --- | --- |
-| R-001 | Overwolf not installed on this host | certain (observed) | blocks all live stages | 1 | 01 | open |
-| R-002 | Overwolf exposes no local XYZ in Training Mode | medium | project-ending | 2 | 01 | open |
-| R-003 | Heading cannot be read reliably from the HUD | medium-high | project-ending | 3 | 04 | open |
-| R-004 | PUBG rejects ordinary `SendInput` | medium | project-ending (no evasion permitted) | 4 | 03 | open |
-| R-005 | Coordinate transform is unstable or non-linear | medium | blocks all navigation | 5 | 04 | open |
-| R-006 | Frame capture is black, stale or overlay-polluted | medium | blocks heading and prompts | 6 | 02 | open |
-| R-007 | Map / phase / view data missing or ambiguous | low-medium | weakens every guard | 7 | 01 | open |
-| R-008 | Indoor position accuracy insufficient for narrow geometry | medium-high | blocks Stages 8-9 | 8 | 08 | open |
-| R-009 | Door interaction unreliable or non-idempotent | medium | blocks Stage 8 | 9 | 08 | open |
-| R-010 | Stair traversal not repeatable | medium-high | blocks Stage 9 | 10 | 09 | open |
-| R-011 | Loot pickup cannot be verified | medium | weakens Stage 10 acceptance | 11 | 10 | open |
-| R-012 | Position update latency causes overshoot | medium | degrades all navigation | 12 | 06-07 | open |
-| R-013 | Recovery masks a systemic failure | medium | false confidence | 13 | 11 | open |
-| R-014 | Game update changes HUD or event schema | low per-week, certain eventually | invalidates profile + routes | 14 | any | open |
+| R-001 | Overwolf not installed on this host | was certain (observed) | blocked all live stages | - | 01 | **retired** |
+| R-002 | Overwolf exposes no local XYZ in Training Mode | medium | project-ending | 1 | 01 | open |
+| R-003 | Heading cannot be read reliably from the HUD | medium-high | project-ending | 2 | 04 | open |
+| R-004 | PUBG rejects ordinary bounded OS input | medium | project-ending (no evasion permitted) | 3 | 03 | open |
+| R-005 | Coordinate transform is unstable or non-linear | medium | blocks all navigation | 4 | 04 | open |
+| R-006 | Frame capture is black, stale or overlay-polluted | medium | blocks heading and prompts | 5 | 02 | open |
+| R-007 | Map / phase / view data missing or ambiguous | low-medium | weakens every guard | 6 | 01 | open |
+| R-008 | Indoor position accuracy insufficient for narrow geometry | medium-high | blocks Stages 8-9 | 7 | 08 | open |
+| R-009 | Door interaction unreliable or non-idempotent | medium | blocks Stage 8 | 8 | 08 | open |
+| R-010 | Stair traversal not repeatable | medium-high | blocks Stage 9 | 9 | 09 | open |
+| R-011 | Loot pickup cannot be verified | medium | weakens Stage 10 acceptance | 10 | 10 | open |
+| R-012 | Position update latency causes overshoot | medium | degrades all navigation | 11 | 06-07 | open |
+| R-013 | Recovery masks a systemic failure | medium | false confidence | 12 | 11 | open |
+| R-014 | Game update changes HUD or event schema | low per-week, certain eventually | invalidates profile + routes | 13 | any | open |
+| R-016 | Overwolf developer mode not enabled | unknown | blocks loading the bridge app | 14 | 01 | open |
 | R-015 | Python 3.14 lacks wheels for capture/vision deps | - | would have blocked Stage 2 | - | 02 | **retired** |
 
 ---
 
-## R-001 - Overwolf not installed
-**Observed at Stage 0.** Absent from all three standard install locations. PUBG
-itself is installed.
+## R-001 - Overwolf not installed (retired)
+Observed absent at the start of Stage 0, which blocked Stage 1 outright.
+**Retired during Stage 0:** Overwolf is installed at `%LOCALAPPDATA%\Overwolf`
+and the process is running; `doctor` detects both.
 
-*Effect:* Stage 1 cannot start. Stages 2-12 all depend on Stage 1.
-*Mitigation:* install Overwolf, enable developer mode, then load the unpacked
-bridge app. `doctor` reports the check with this remedy attached.
-*Detection:* `pubg-bot doctor` -> `overwolf install`.
+The residual concern - whether developer mode is enabled so an unpacked app can
+be loaded - is tracked separately as R-016, because it is an application setting
+the doctor cannot observe.
+
+## R-016 - Overwolf developer mode not enabled
+Installing Overwolf is not sufficient: loading an unpacked development app
+requires developer mode (Settings -> About -> Development Options).
+
+*Effect:* the bridge cannot be loaded, so Stage 1 cannot produce evidence.
+*Mitigation:* enable it before the Stage 1 live session. Stage 1's check script
+reports the actual load result rather than asserting the setting is correct -
+the doctor deliberately does not read another application's private config.
+*Detection:* Stage 1 bridge load failure.
 
 ## R-002 - No local XYZ in Training Mode
 The whole teach-and-repeat design assumes a position reference. Overwolf's PUBG

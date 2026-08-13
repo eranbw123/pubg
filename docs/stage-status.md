@@ -3,7 +3,7 @@
 <!-- GENERATED FILE - edit config/stage-state.yaml or src/pubg_training_bot/stages.py
      and regenerate with: pubg-bot stage status --write-docs -->
 
-Generated: 2026-08-13T15:05:41+00:00
+Generated: 2026-08-13T15:13:22+00:00
 Active stage: **00 - Foundation, scope lock and doctor**
 
 | Stage | Title | Status | Live test | Accepted | Notes |
