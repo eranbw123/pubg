@@ -11,19 +11,19 @@ Status values: `open`, `retired`, `realised`, `accepted`.
 | --- | --- | --- | --- | --- | --- | --- |
 | R-001 | Overwolf not installed on this host | was certain (observed) | blocked all live stages | - | 01 | **retired** |
 | R-002 | Overwolf exposes no local XYZ in Training Mode | medium | project-ending | 1 | 01 | open |
-| R-003 | Heading cannot be read reliably from the HUD | medium-high | project-ending | 2 | 04 | open |
-| R-004 | PUBG rejects ordinary bounded OS input | medium | project-ending (no evasion permitted) | 3 | 03 | open |
-| R-005 | Coordinate transform is unstable or non-linear | medium | blocks all navigation | 4 | 04 | open |
-| R-006 | Frame capture is black, stale or overlay-polluted | medium | blocks heading and prompts | 5 | 02 | open |
-| R-007 | Map / phase / view data missing or ambiguous | low-medium | weakens every guard | 6 | 01 | open |
-| R-008 | Indoor position accuracy insufficient for narrow geometry | medium-high | blocks Stages 8-9 | 7 | 08 | open |
-| R-009 | Door interaction unreliable or non-idempotent | medium | blocks Stage 8 | 8 | 08 | open |
-| R-010 | Stair traversal not repeatable | medium-high | blocks Stage 9 | 9 | 09 | open |
-| R-011 | Loot pickup cannot be verified | medium | weakens Stage 10 acceptance | 10 | 10 | open |
-| R-012 | Position update latency causes overshoot | medium | degrades all navigation | 11 | 06-07 | open |
-| R-013 | Recovery masks a systemic failure | medium | false confidence | 12 | 11 | open |
-| R-014 | Game update changes HUD or event schema | low per-week, certain eventually | invalidates profile + routes | 13 | any | open |
-| R-016 | Overwolf developer mode not enabled | unknown | blocks loading the bridge app | 14 | 01 | open |
+| R-016 | Overwolf developer access not granted (channel + account whitelist) | medium-high | blocks Stage 1 entirely; remedy is outside our control | 2 | 01 | open |
+| R-003 | Heading cannot be read reliably from the HUD | medium-high | project-ending | 3 | 04 | open |
+| R-004 | PUBG rejects ordinary bounded OS input | medium | project-ending (no evasion permitted) | 4 | 03 | open |
+| R-005 | Coordinate transform is unstable or non-linear | medium | blocks all navigation | 5 | 04 | open |
+| R-006 | Frame capture is black, stale or overlay-polluted | medium | blocks heading and prompts | 6 | 02 | open |
+| R-007 | Map / phase / view data missing or ambiguous | low-medium | weakens every guard | 7 | 01 | open |
+| R-008 | Indoor position accuracy insufficient for narrow geometry | medium-high | blocks Stages 8-9 | 8 | 08 | open |
+| R-009 | Door interaction unreliable or non-idempotent | medium | blocks Stage 8 | 9 | 08 | open |
+| R-010 | Stair traversal not repeatable | medium-high | blocks Stage 9 | 10 | 09 | open |
+| R-011 | Loot pickup cannot be verified | medium | weakens Stage 10 acceptance | 11 | 10 | open |
+| R-012 | Position update latency causes overshoot | medium | degrades all navigation | 12 | 06-07 | open |
+| R-013 | Recovery masks a systemic failure | medium | false confidence | 13 | 11 | open |
+| R-014 | Game update changes HUD or event schema | low per-week, certain eventually | invalidates profile + routes | 14 | any | open |
 | R-015 | Python 3.14 lacks wheels for capture/vision deps | - | would have blocked Stage 2 | - | 02 | **retired** |
 
 ---
@@ -37,15 +37,42 @@ The residual concern - whether developer mode is enabled so an unpacked app can
 be loaded - is tracked separately as R-016, because it is an application setting
 the doctor cannot observe.
 
-## R-016 - Overwolf developer mode not enabled
-Installing Overwolf is not sufficient: loading an unpacked development app
-requires developer mode (Settings -> About -> Development Options).
+## R-016 - Overwolf developer access not granted
+Installing Overwolf is not sufficient, and this is **not** a settings toggle.
+Overwolf's documentation states: *"To develop, load or run unpacked or
+unreleased apps, you have to get whitelisted first"*, and separately that
+developers must be *"approved by Overwolf"* before accessing developer tools.
+Two distinct things are required:
 
-*Effect:* the bridge cannot be loaded, so Stage 1 cannot produce evidence.
-*Mitigation:* enable it before the Stage 1 live session. Stage 1's check script
-reports the actual load result rather than asserting the setting is correct -
-the doctor deliberately does not read another application's private config.
-*Detection:* Stage 1 bridge load failure.
+1. **Developers channel.** `Development options` does not appear on the
+   production client. Settings -> About -> `Ctrl + Shift + left click` the
+   Overwolf logo -> type `Developers` in the channel field -> update and
+   relaunch.
+2. **Account whitelisting.** Community and vendor sources agree the account
+   must be approved by emailing `developers@overwolf.com` with a description of
+   the app. Loading an unpacked app without it reportedly fails with
+   "Unauthorized App".
+
+*Effect:* the bridge cannot be loaded at all, so Stage 1 cannot produce
+evidence, and every later stage depends on Stage 1. Unlike the other risks in
+this register, the remedy is **outside our control and has a human turnaround
+time**.
+
+*Mitigation:* test empirically and cheaply before assuming the worst - switch to
+the Developers channel first and try loading any unpacked app. If it loads, the
+whitelist is not enforced for this account and the risk is retired. If it
+returns "Unauthorized App", start the email request immediately, because the
+wait is the critical path.
+
+*Detection:* Stage 1 bridge load failure. The doctor deliberately does not
+attempt to check this: channel and whitelist state live inside Overwolf's own
+account and config, and a check that guessed at them would report a comfortable
+answer while knowing nothing.
+
+*Sources:* [Setting up a development
+environment](https://dev.overwolf.com/ow-native/getting-started/onboarding-resources/setting-up-dev-environment/),
+[Enabling and using developer
+tools](https://dev.overwolf.com/ow-native/guides/dev-tools/use-enable-developer-tools/).
 
 ## R-002 - No local XYZ in Training Mode
 The whole teach-and-repeat design assumes a position reference. Overwolf's PUBG

@@ -34,11 +34,21 @@ failure, since Stage 0 does not touch the game. If Overwolf is installed
 somewhere unusual, add the path to `OVERWOLF_PATH_CANDIDATES` in
 `src/pubg_training_bot/diagnostics/probes.py`.
 
-**`overwolf install` is `ok` but the bridge will not load (Stage 1)**
-Installing Overwolf is not the same as enabling developer mode. Enable it under
-Settings -> About -> Development Options, then load the unpacked app. The doctor
-cannot check this - it is an application setting, not a filesystem fact
-(risk R-016).
+**"Development options" is missing from Settings -> About**
+You are on the production Overwolf channel, where it does not appear. Switch
+channel: Settings -> About -> `Ctrl + Shift + left click` the Overwolf logo ->
+type `Developers` in the channel field -> update and relaunch.
+
+**"Unauthorized App" when loading the unpacked bridge (Stage 1)**
+The Overwolf account is not whitelisted for development. Request it from
+`developers@overwolf.com`. This is an approval with a human turnaround time, not
+a setting, which is why R-016 ranks second in the risk register - it gates
+Stage 1 and everything after it.
+
+**`corepack enable pnpm` fails with `EPERM ... C:\Program Files\nodejs\pnpx`**
+corepack writes shims into the Node install directory and needs an elevated
+shell. Either run it as administrator, or use the no-elevation route:
+`npm install -g pnpm` (installs to `%APPDATA%\npm`). See D-014.
 
 **`pubg install: not found`**
 The Steam library is somewhere unusual. Add the path to `PUBG_PATH_CANDIDATES`

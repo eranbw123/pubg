@@ -164,19 +164,34 @@ Overwolf is now installed at `%LOCALAPPDATA%\Overwolf` and `Overwolf.exe` is
 running. `doctor` detects both the install path and the process, so risk R-001
 is retired.
 
-Two prerequisites remain before Stage 1 can start, and both are environmental
-rather than code:
+**pnpm** was installed at the same time (see D-014).
 
-- **Developer mode** must be enabled in Overwolf (Settings -> About -> Development
-  Options) so an unpacked app can be loaded. `doctor` cannot observe this - it is
-  an application setting, not a filesystem or process fact - so Stage 1's own
-  check script will report the load result rather than guessing.
-- **pnpm** is still missing (`corepack enable pnpm`), needed for the bridge
-  workspace.
+One prerequisite remains, and it turned out to be larger than expected: Overwolf
+requires **developer access**, which is a channel switch *plus* account
+approval, not a settings toggle. Tracked as R-016 and now the second-highest
+risk in the register.
 
 Detection deliberately remains path- and process-based rather than reading
 Overwolf's own configuration: the doctor is read-only and must not depend on
 another application's private file layout.
+
+---
+
+## D-014 - pnpm installed via npm, not corepack
+**Stage 00 | active**
+
+`corepack enable pnpm` fails on this host with
+`EPERM: operation not permitted, open 'C:\Program Files\nodejs\pnpx'` - corepack
+writes its shims into the Node installation directory, which requires an
+elevated shell.
+
+`npm install -g pnpm` installs to the user-writable global prefix
+(`%APPDATA%\npm`) and needs no elevation, so that is what was used. pnpm 11.21.0
+is installed and detected by the doctor.
+
+The doctor's remedy text still suggests `corepack enable pnpm`, which is the
+upstream-recommended route and works fine in an elevated shell; the npm route is
+recorded here as the fallback that avoids elevation.
 
 ---
 

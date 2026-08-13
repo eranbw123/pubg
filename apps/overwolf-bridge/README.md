@@ -33,10 +33,20 @@ generated from `src/pubg_training_bot/domain/bridge.py`.
 
 ## Prerequisites
 
-Overwolf installed with developer mode enabled, plus Node 20+ and pnpm
-(`corepack enable pnpm`). `pubg-bot doctor` reports the Overwolf install, the
-Overwolf process and Node; it cannot observe developer mode, which is an
-application setting rather than a filesystem fact (risk R-016).
+Loading this app unpacked needs **developer access**, which is two separate
+things (risk R-016):
 
-On this host: Overwolf installed and running, Node 24 present, **pnpm still
-missing**.
+1. **Developers channel** - `Development options` is absent from the production
+   client. Settings -> About -> `Ctrl + Shift + left click` the Overwolf logo ->
+   enter `Developers` in the channel field -> update and relaunch.
+2. **Account whitelisting** - Overwolf's docs state that to "develop, load or
+   run unpacked or unreleased apps, you have to get whitelisted first",
+   requested via `developers@overwolf.com`.
+
+`pubg-bot doctor` reports the Overwolf install path, the Overwolf process, Node
+and pnpm. It does **not** try to check the channel or the whitelist: both live
+inside Overwolf's own account state, and a check that guessed at them would look
+reassuring while knowing nothing.
+
+On this host: Overwolf installed and running, Node 24, pnpm 11.21.0. Developer
+access unverified.
