@@ -37,6 +37,31 @@ class ProbeOptions:
     simulate: bool = False
 
 
+def resolve_token(explicit: str, paths: ProjectPaths) -> tuple[str, bool]:
+    """Return ``(token, reused)``.
+
+    A token that changes every run would have to be re-pasted into the Overwolf
+    debug window every run, and pasting a stale one fails as a confusing
+    ``auth rejected``. So a generated token is cached under ``data/local/``
+    (git-ignored) and reused: the operator pastes it once, ever.
+
+    An explicit ``--token`` always wins and is never written to disk.
+    """
+    if explicit:
+        return explicit, False
+
+    cache = paths.data_dir / "session-token"
+    if cache.exists():
+        cached = cache.read_text(encoding="utf-8").strip()
+        if cached:
+            return cached, True
+
+    token = generate_session_token()
+    cache.parent.mkdir(parents=True, exist_ok=True)
+    cache.write_text(token, encoding="utf-8")
+    return token, False
+
+
 def run_sensor_probe(
     options: ProbeOptions,
     *,
@@ -46,7 +71,7 @@ def run_sensor_probe(
 ) -> tuple[SensorProbeReport, Path]:
     paths = paths or default_paths()
     clock = clock or SystemClock()
-    token = options.token or generate_session_token()
+    token, token_reused = resolve_token(options.token, paths)
 
     config = ServerConfig(host=options.host, port=options.port, token=token)
     source = OverwolfSensorSource(config=config, clock=clock)
@@ -69,6 +94,11 @@ def run_sensor_probe(
         emit("=" * 70)
         emit(f"listening on ws://{options.host}:{options.port}")
         emit(f"session token: {token}")
+        if token_reused:
+            emit("  (reused from a previous run - if the bridge is already configured,")
+            emit("   you do not need to paste it again)")
+        else:
+            emit("  (new token, cached for future runs - paste it into the bridge once)")
         emit("")
         emit("In Overwolf: load the unpacked bridge app, then start PUBG Training Mode.")
     emit(f"Waiting up to {options.connect_timeout_s:.0f}s for the bridge to connect...")
