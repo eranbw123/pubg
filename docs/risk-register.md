@@ -11,7 +11,7 @@ Status values: `open`, `retired`, `realised`, `accepted`.
 | --- | --- | --- | --- | --- | --- | --- |
 | R-001 | Overwolf not installed on this host | was certain (observed) | blocked all live stages | - | 01 | **retired** |
 | R-002 | Overwolf exposes no local XYZ in Training Mode | medium | project-ending | 1 | 01 | open |
-| R-016 | Overwolf developer access not granted (channel + account whitelist) | medium-high | blocks Stage 1 entirely; remedy is outside our control | 2 | 01 | open |
+| R-016 | Overwolf developer access not granted (policy: private apps not approved) | **high** | blocks Stage 1 entirely; remedy is outside our control | 2 | 01 | open |
 | R-003 | Heading cannot be read reliably from the HUD | medium-high | project-ending | 3 | 04 | open |
 | R-004 | PUBG rejects ordinary bounded OS input | medium | project-ending (no evasion permitted) | 4 | 03 | open |
 | R-005 | Coordinate transform is unstable or non-linear | medium | blocks all navigation | 5 | 04 | open |
@@ -49,9 +49,16 @@ Two distinct things are required:
    Overwolf logo -> type `Developers` in the channel field -> update and
    relaunch. **Satisfied on this host** (client 0.309.0.11, channel
    `Developers`), and now verified by the doctor rather than asserted.
-2. **Account whitelisting** - Overwolf's docs state the account must be approved
-   to load unpacked or unreleased apps, requested via `developers@overwolf.com`.
-   Loading without it reportedly fails with "Unauthorized App". **Unverified.**
+2. **Account whitelisting** - and this is worse than first recorded. Overwolf's
+   documentation states whitelisting "is only given to app ideas submitted and
+   approved using the App proposal process", and that **"Overwolf currently
+   doesn't approve private apps"**. The proposal process expects a public app
+   with a visible desktop window, compliant monetisation, and compliance with
+   the game's policies.
+
+   On the documented rules a personal, non-store tool does not qualify. This is
+   a policy obstacle, not paperwork. Likelihood of the risk materialising is
+   therefore **high**, not medium. See `docs/overwolf-whitelist-request.md`.
 
 *Effect:* the bridge cannot be loaded at all, so Stage 1 cannot produce
 evidence, and every later stage depends on Stage 1. Unlike the other risks in

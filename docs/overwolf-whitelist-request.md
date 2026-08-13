@@ -1,89 +1,77 @@
-# Overwolf developer whitelist request
+# Overwolf developer access (R-016)
 
-Draft email for `developers@overwolf.com`, required by risk R-016 before the
-bridge can be loaded as an unpacked app.
+## What the research found
 
-**It discloses the automation purpose deliberately.** The Overwolf app is
-sensor-only, but it exists to feed a controller that sends synthetic input to
-PUBG. Describing only the bridge would be misleading, and approval obtained that
-way is worth little - it can be withdrawn once the full picture emerges, after
-the project has been built on top of it.
+Whitelisting is not a free-text email in the way community write-ups suggest.
+Overwolf's own documentation says:
 
-Replace the bracketed fields before sending.
+> "Using Overwolf's APIs require your app idea to be whitelisted. This is only
+> given to app ideas submitted and approved using the App proposal process."
+
+and, decisively for this project:
+
+> "Overwolf currently doesn't approve private apps."
+
+The proposal process expects a **public** app with at least one visible desktop
+window, compliant monetisation (ads or subscriptions), and compliance with both
+Overwolf's terms and the game's policies.
+
+That is a policy obstacle, not a paperwork one. This project is a personal tool
+with no store ambitions, so on the documented rules it does not qualify.
+
+**We do not dress it up as a public app to get through the proposal form.**
+Obtaining access by misrepresenting what the software is would be deceiving a
+company to get onto its platform, and the access would be withdrawn the moment
+the real purpose surfaced - after the project had been built on top of it.
+
+So the approach is a short, direct question that gets a fast yes/no, rather than
+a proposal engineered to pass.
 
 ---
 
-**Subject:** Developer whitelist request - local, sensor-only PUBG app for a Training Mode navigation project
+## The email
 
-Hello,
+**To:** developers@overwolf.com
+**Subject:** Development-only whitelist for a personal PUBG project?
 
-I would like to request developer whitelisting for my Overwolf account so I can
-load an unpacked app during local development.
+Hi,
 
-**Account:** [your Overwolf account email]
-**Name:** [your name]
-**Overwolf client:** 0.309.0.11, Developers channel
-**App name:** PUBG Training Bridge (personal project, not intended for the store)
+I'm building a personal project on top of the PUBG Game Events Provider and I'd
+like to load it unpacked on my own machine for development. Before I go further
+I want to check whether that's possible at all, because your docs say
+whitelisting comes from the App proposal process and that private apps aren't
+approved.
 
-**What the app does**
+The app itself is small: a background app that registers five documented GEP
+features (`location`, `me`, `phase`, `map`, `match_info`) and forwards them to a
+local process on 127.0.0.1. It requests only the `GameInfo` permission, makes no
+external network calls, and isn't intended for the store.
 
-It is a sensor bridge, and nothing else. It:
+To be upfront about what it's for: it feeds a personal experiment that replays a
+manually recorded route in PUBG **Training Mode**, using ordinary OS keyboard and
+mouse input. Training Mode only, never public matches. No combat features - I
+deliberately don't request `kill`, `death`, `killer`, `team` or `roster` - and no
+memory reading, injection or anti-cheat interference.
 
-- targets PUBG only (game class id 10906);
-- registers five documented Game Events Provider features: `location`, `me`,
-  `phase`, `map`, `match_info`;
-- forwards those payloads to a Python process on `127.0.0.1` over a
-  token-authenticated WebSocket;
-- has one small debug window showing connection status and the last payload.
+Is there any development-only access for something like this, or is a public
+store app the only route? A straight no is genuinely useful - I'd rather know
+now than build further on access I can't have.
 
-It requests only the `GameInfo` permission, makes no external network requests,
-stores nothing remotely, and contains no input, overlay-interaction or
-key-simulation code of any kind.
-
-**What it is part of, so you can judge the whole thing**
-
-The bridge feeds a personal research project that navigates a **recorded route
-in PUBG Training Mode**. A human walks a route once; a local controller then
-replays it, using position from your GEP `location` feature for navigation and
-ordinary operating-system keyboard and mouse input to move the character. I want
-to be upfront that this is game automation, since that is the part you would
-reasonably want to know about before granting access.
-
-Deliberate boundaries, enforced in the code rather than only intended:
-
-- **Training Mode only**, solo. No public or ranked matches at any point.
-- **No combat capability**: no aiming, firing, recoil control, opponent
-  detection, or use of any hidden information. The combat and roster GEP
-  features (`kill`, `death`, `killer`, `revived`, `team`, `roster`) are
-  explicitly *not* requested.
-- **No memory reading, DLL or process injection, packet interception, engine
-  hooks, kernel drivers, or anti-cheat interference.** The project uses only
-  documented Overwolf events, visible pixels, and ordinary OS input APIs. A
-  static check in the build fails the project if any of those techniques appear
-  in the source.
-- The Overwolf app never produces input. The only path back into the game is a
-  separate local process using standard OS input, which is a deliberate
-  separation.
-
-**What I am asking for**
-
-Only the ability to load the app unpacked on my own machine for development. I
-am not requesting store distribution and have no plans to publish it.
-
-I am happy to send the manifest, the app source, or a short recording of it
-running, and equally happy to hear if this is not something you want on the
-platform - I would rather know now than build further on access that would
-later be withdrawn.
-
-Thank you for your time,
+Thanks,
 [your name]
 [your Overwolf account email]
 
 ---
 
-## If they decline
+## If the answer is no
 
-That is a legitimate outcome, not a problem to route around. It would mean
-Stage 1 cannot be completed as designed, and the project stops at that
-feasibility gate (the same rule that applies if PUBG rejects ordinary input at
-Stage 3). Record the response in `docs/decisions.md` and mark R-016 as realised.
+That is a feasibility gate, and the project stops at it rather than routing
+around it - the same rule that applies if PUBG rejects ordinary input at
+Stage 3. Record the reply in `docs/decisions.md` and mark R-016 realised.
+
+The only fallback that stays inside the declared scope would be deriving
+position from **visible pixels** instead of game events, since the scope permits
+"visible game pixels". That would be a different project shape: no `location`
+feature, so position would have to come from the in-game map or minimap, with
+accuracy far worse than the ~1 Hz coordinate stream this design assumes. It is
+not a drop-in substitute and should not be started speculatively.
