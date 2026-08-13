@@ -175,6 +175,45 @@ Superseded in part by D-015: detection is now registry-based, not path-based.
 
 ---
 
+## D-024 - Memory reading is refused, permanently, and not for rules reasons
+**Stage 01 | active**
+
+Raised as a fallback if Overwolf access is denied: read only the player's own
+X/Y/Z from PUBG's process memory, on the argument that coordinates are neither
+deep nor secret.
+
+Refused. The objection is not the sensitivity of the data - it is the technique:
+
+- PUBG runs **BattlEye**, a kernel-mode anti-cheat. It tracks handles opened
+  against the game process and bans on the *act*, not the volume: reading once
+  is treated the same as reading five thousand times.
+- BattlEye issues **hardware-ID bans**, so the cost is not a throwaway account.
+- It is item one on this project's own forbidden list (`CLAUDE.md` section 4),
+  written before any of this was inconvenient.
+
+"Only the coordinates" is not a mitigating detail. `ReadProcessMemory` against a
+protected game is the same call an ESP cheat makes, and the anti-cheat cannot
+and does not distinguish intent.
+
+`safety.py` already fails the build on these symbols. That check stays.
+
+---
+
+## D-025 - Overwolf's policy names this exact app as ineligible
+**Stage 01 | active**
+
+Overwolf defines a private app as one "aimed for personal/small scale/private
+use, not planned to be published on the Overwolf Appstore, **and/or built for
+the sole purpose of being a faceless bridge to another service**", and states it
+does not approve them.
+
+The second clause describes our bridge precisely - it is a faceless bridge
+feeding a local controller. So the app is disqualified twice over, and no
+amount of rewording the request changes that. Sending the short enquiry is still
+worth one email, but the expected answer is no.
+
+---
+
 ## D-023 - A synthetic bridge, so live sessions are not spent debugging our code
 **Stage 01 | active**
 
