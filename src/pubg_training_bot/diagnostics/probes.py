@@ -112,6 +112,80 @@ def running_processes(names: tuple[str, ...]) -> list[str]:
 
 
 @dataclass(frozen=True)
+class OverwolfInfo:
+    """Overwolf client facts, read from the registry where available.
+
+    The registry is authoritative: ``%LOCALAPPDATA%\\Overwolf`` holds user data
+    while the client itself installs under Program Files, so a path scan alone
+    reports "installed" without knowing the version or the release channel.
+
+    ``channel`` matters because ``Development options`` is absent from the
+    production client. The developer *whitelist* is not represented here - it
+    lives in Overwolf's account state, not on this machine, so it stays an
+    observation the Stage 1 load attempt has to make.
+    """
+
+    installed: bool
+    install_folder: str | None = None
+    version: str | None = None
+    channel: str | None = None
+    running: bool = False
+    source: str = "none"
+
+    @property
+    def is_developer_channel(self) -> bool:
+        return (self.channel or "").strip().lower() == "developers"
+
+
+#: Registry locations of the Overwolf client, most specific first.
+_OVERWOLF_REGISTRY_KEYS: tuple[tuple[str, str], ...] = (
+    ("HKLM", r"SOFTWARE\WOW6432Node\Overwolf"),
+    ("HKLM", r"SOFTWARE\Overwolf"),
+    ("HKCU", r"Software\Overwolf"),
+)
+
+
+def overwolf_info() -> OverwolfInfo:
+    running = bool(running_processes(OVERWOLF_PROCESS_NAMES))
+    paths = expand_existing(OVERWOLF_PATH_CANDIDATES)
+
+    if IS_WINDOWS:
+        try:
+            import winreg
+
+            roots = {"HKLM": winreg.HKEY_LOCAL_MACHINE, "HKCU": winreg.HKEY_CURRENT_USER}
+            for root_name, sub_key in _OVERWOLF_REGISTRY_KEYS:
+                try:
+                    with winreg.OpenKey(roots[root_name], sub_key) as key:
+                        values: dict[str, str] = {}
+                        for name in ("InstallFolder", "CurrentVersion", "Channel"):
+                            try:
+                                values[name] = str(winreg.QueryValueEx(key, name)[0])
+                            except OSError:
+                                continue
+                        if values:
+                            folder = values.get("InstallFolder") or (paths[0] if paths else None)
+                            return OverwolfInfo(
+                                installed=True,
+                                install_folder=folder,
+                                version=values.get("CurrentVersion"),
+                                channel=values.get("Channel"),
+                                running=running,
+                                source=f"registry {root_name}\\{sub_key}",
+                            )
+                except OSError:
+                    continue
+        except ImportError:  # pragma: no cover - non-Windows
+            pass
+
+    if paths:
+        return OverwolfInfo(
+            installed=True, install_folder=paths[0], running=running, source="path scan"
+        )
+    return OverwolfInfo(installed=False, running=running, source="not found")
+
+
+@dataclass(frozen=True)
 class DisplayInfo:
     width: int | None
     height: int | None
@@ -223,11 +297,13 @@ __all__ = [
     "CommandVersion",
     "DisplayInfo",
     "GitState",
+    "OverwolfInfo",
     "command_version",
     "display_info",
     "expand_existing",
     "git_state",
     "os_info",
+    "overwolf_info",
     "python_info",
     "running_processes",
 ]

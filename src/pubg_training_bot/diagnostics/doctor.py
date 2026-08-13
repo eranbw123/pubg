@@ -211,19 +211,46 @@ def run_doctor(paths: ProjectPaths | None = None) -> DoctorReport:
     checks.append(_tool_check("git", "git", required=False, remedy="Install Git for Windows."))
 
     # --- game environment ---------------------------------------------- #
-    overwolf_paths = probes.expand_existing(probes.OVERWOLF_PATH_CANDIDATES)
-    overwolf_running = probes.running_processes(probes.OVERWOLF_PROCESS_NAMES)
+    overwolf = probes.overwolf_info()
     checks.append(
         DoctorCheck(
             name="overwolf install",
-            status=CheckStatus.OK if overwolf_paths else CheckStatus.WARN,
-            value=overwolf_paths[0] if overwolf_paths else "not found",
+            status=CheckStatus.OK if overwolf.installed else CheckStatus.WARN,
+            value=(
+                f"{overwolf.version or 'unknown version'} at "
+                f"{overwolf.install_folder or 'unknown location'}"
+                if overwolf.installed
+                else "not found"
+            ),
             detail=(
-                f"running: {', '.join(overwolf_running)}" if overwolf_running else "not running"
+                f"{'running' if overwolf.running else 'not running'}; source: {overwolf.source}"
             ),
             remedy=(
-                "Install Overwolf from https://www.overwolf.com/ and enable developer mode. "
-                "Stage 1 cannot start without it."
+                "Install Overwolf from https://www.overwolf.com/. Stage 1 cannot start without it."
+            ),
+            needed_by_stage="01",
+        )
+    )
+    # The release channel IS observable (registry), unlike the developer
+    # whitelist, which lives in Overwolf's account state and can only be
+    # established by attempting an unpacked load.
+    checks.append(
+        DoctorCheck(
+            name="overwolf channel",
+            status=(
+                CheckStatus.OK
+                if overwolf.is_developer_channel
+                else (CheckStatus.WARN if overwolf.installed else CheckStatus.INFO)
+            ),
+            value=overwolf.channel or "unknown",
+            detail=(
+                "developer channel active; 'Development options' should be visible"
+                if overwolf.is_developer_channel
+                else "'Development options' is absent outside the Developers channel"
+            ),
+            remedy=(
+                "Overwolf Settings -> About -> Ctrl+Shift+click the logo -> enter "
+                "'Developers' in the channel field -> update and relaunch."
             ),
             needed_by_stage="01",
         )

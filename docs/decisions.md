@@ -171,9 +171,38 @@ requires **developer access**, which is a channel switch *plus* account
 approval, not a settings toggle. Tracked as R-016 and now the second-highest
 risk in the register.
 
-Detection deliberately remains path- and process-based rather than reading
-Overwolf's own configuration: the doctor is read-only and must not depend on
-another application's private file layout.
+Superseded in part by D-015: detection is now registry-based, not path-based.
+
+---
+
+## D-015 - Overwolf detection reads the registry; the channel IS checkable
+**Stage 00 | active - corrects D-013**
+
+D-013 asserted that developer mode "cannot be observed" by the doctor. That was
+wrong, and inspecting the machine proved it: the release channel is published at
+`HKLM\SOFTWARE\WOW6432Node\Overwolf\Channel`, alongside `CurrentVersion` and
+`InstallFolder`.
+
+Two consequences:
+
+- **Path scanning was also misleading.** `%LOCALAPPDATA%\Overwolf` is user data;
+  the client installs to `C:\Program Files (x86)\Overwolf\`. The old check
+  reported the user-data folder as "the install" and knew no version. The doctor
+  now reads the registry first and falls back to the path scan.
+- **A new `overwolf channel` check.** `Development options` is absent outside the
+  Developers channel, which is precisely the symptom that prompted this - the
+  operator could not find the setting because the production client does not
+  have it.
+
+The developer **whitelist** remains genuinely unobservable: it is account state
+held by Overwolf, not a machine fact. It is therefore absent from `OverwolfInfo`
+entirely, and `test_overwolf_probe_reports_channel_without_claiming_whitelist`
+asserts that no doctor check mentions it. The distinction is the point: report
+what is measurable, stay silent about what is not, and never let a green line
+imply knowledge the tool does not have.
+
+Observed on this host: Overwolf 0.309.0.11, channel `Developers`, install folder
+`C:\Program Files (x86)\Overwolf\`.
 
 ---
 

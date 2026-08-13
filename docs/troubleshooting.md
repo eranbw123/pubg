@@ -35,9 +35,25 @@ somewhere unusual, add the path to `OVERWOLF_PATH_CANDIDATES` in
 `src/pubg_training_bot/diagnostics/probes.py`.
 
 **"Development options" is missing from Settings -> About**
-You are on the production Overwolf channel, where it does not appear. Switch
-channel: Settings -> About -> `Ctrl + Shift + left click` the Overwolf logo ->
-type `Developers` in the channel field -> update and relaunch.
+You are on the production Overwolf channel, where it does not appear. Check with
+`pubg-bot doctor` -> `overwolf channel`. To switch: Settings -> About ->
+`Ctrl + Shift + left click` the Overwolf logo -> type `Developers` in the
+channel field -> update and relaunch.
+
+Once on the Developers channel, the dev items are behind toggles in Overwolf's
+settings ("show Overwolf built-in apps" / "show dev items").
+
+**Nothing to load as an unpacked extension**
+You need an app folder on disk; there is nothing to "install" from a store. The
+official sample app loads with no build step:
+
+```powershell
+git clone --depth 1 https://github.com/overwolf/sample-app.git "$env:USERPROFILE\overwolf-sample-app"
+```
+
+Load unpacked and select the **`native`** subfolder (the `ts` version needs a
+build first). Do not edit the author or app name in its manifest - Overwolf
+refuses to load an unpacked app whose identity has been changed.
 
 **"Unauthorized App" when loading the unpacked bridge (Stage 1)**
 The Overwolf account is not whitelisted for development. Request it from

@@ -21,6 +21,7 @@ REQUIRED_CHECKS = {
     "pnpm",
     "git",
     "overwolf install",
+    "overwolf channel",
     "pubg install",
     "display",
     "git state",
@@ -88,6 +89,61 @@ def test_doctor_never_touches_the_actuator(repo_paths: ProjectPaths, monkeypatch
 
     monkeypatch.setattr(registry, "create_actuator", explode)
     run_doctor(repo_paths)
+
+
+def test_overwolf_probe_reports_channel_without_claiming_whitelist(monkeypatch) -> None:
+    """The release channel is observable; the developer whitelist is not.
+
+    Conflating them would let the doctor print a reassuring line about something
+    it cannot actually see.
+    """
+    from pubg_training_bot.diagnostics import probes
+
+    info = probes.OverwolfInfo(
+        installed=True,
+        install_folder=r"C:\Program Files (x86)\Overwolf",
+        version="0.309.0.11",
+        channel="Developers",
+        running=True,
+        source="registry",
+    )
+    assert info.is_developer_channel
+
+    monkeypatch.setattr(probes, "overwolf_info", lambda: info)
+    report = run_doctor()
+    channel = next(c for c in report.checks if c.name == "overwolf channel")
+    assert channel.status is CheckStatus.OK
+    assert channel.value == "Developers"
+
+    fields = set(probes.OverwolfInfo.__dataclass_fields__)
+    assert "whitelisted" not in fields
+    assert not any("whitelist" in c.value.lower() for c in report.checks)
+
+
+def test_production_channel_is_flagged_with_a_remedy(monkeypatch) -> None:
+    from pubg_training_bot.diagnostics import probes
+
+    monkeypatch.setattr(
+        probes,
+        "overwolf_info",
+        lambda: probes.OverwolfInfo(installed=True, channel="Production", source="registry"),
+    )
+    report = run_doctor()
+    channel = next(c for c in report.checks if c.name == "overwolf channel")
+    assert channel.status is CheckStatus.WARN
+    assert "Developers" in channel.remedy
+
+
+def test_missing_overwolf_is_a_warning_not_a_failure(monkeypatch) -> None:
+    """Stage 0 does not touch the game, so a missing Overwolf must not fail it."""
+    from pubg_training_bot.diagnostics import probes
+
+    monkeypatch.setattr(probes, "overwolf_info", lambda: probes.OverwolfInfo(installed=False))
+    report = run_doctor()
+    install = next(c for c in report.checks if c.name == "overwolf install")
+    assert install.status is CheckStatus.WARN
+    assert install.value == "not found"
+    assert not report.blocking_failures
 
 
 def test_doctor_survives_a_broken_repo_layout(tmp_path) -> None:

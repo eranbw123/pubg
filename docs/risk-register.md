@@ -44,14 +44,14 @@ unreleased apps, you have to get whitelisted first"*, and separately that
 developers must be *"approved by Overwolf"* before accessing developer tools.
 Two distinct things are required:
 
-1. **Developers channel.** `Development options` does not appear on the
+1. **Developers channel** - `Development options` does not appear on the
    production client. Settings -> About -> `Ctrl + Shift + left click` the
    Overwolf logo -> type `Developers` in the channel field -> update and
-   relaunch.
-2. **Account whitelisting.** Community and vendor sources agree the account
-   must be approved by emailing `developers@overwolf.com` with a description of
-   the app. Loading an unpacked app without it reportedly fails with
-   "Unauthorized App".
+   relaunch. **Satisfied on this host** (client 0.309.0.11, channel
+   `Developers`), and now verified by the doctor rather than asserted.
+2. **Account whitelisting** - Overwolf's docs state the account must be approved
+   to load unpacked or unreleased apps, requested via `developers@overwolf.com`.
+   Loading without it reportedly fails with "Unauthorized App". **Unverified.**
 
 *Effect:* the bridge cannot be loaded at all, so Stage 1 cannot produce
 evidence, and every later stage depends on Stage 1. Unlike the other risks in
@@ -64,10 +64,17 @@ whitelist is not enforced for this account and the risk is retired. If it
 returns "Unauthorized App", start the email request immediately, because the
 wait is the critical path.
 
-*Detection:* Stage 1 bridge load failure. The doctor deliberately does not
-attempt to check this: channel and whitelist state live inside Overwolf's own
-account and config, and a check that guessed at them would report a comfortable
-answer while knowing nothing.
+*Detection:* split, because the two halves are not equally observable - an
+earlier version of this entry wrongly lumped them together and claimed neither
+could be checked.
+
+- **Channel: observable.** It is a machine fact, published at
+  `HKLM\SOFTWARE\WOW6432Node\Overwolf\Channel`. The doctor now reports it
+  (`overwolf channel`), along with the client version and real install folder.
+- **Whitelist: not observable.** It is account state held by Overwolf, not a
+  machine fact. The doctor does not represent it at all, and a unit test asserts
+  no check mentions it - a green line about something the tool cannot see is
+  worse than no line.
 
 *Sources:* [Setting up a development
 environment](https://dev.overwolf.com/ow-native/getting-started/onboarding-resources/setting-up-dev-environment/),
