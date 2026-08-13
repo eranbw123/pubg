@@ -175,6 +175,33 @@ Superseded in part by D-015: detection is now registry-based, not path-based.
 
 ---
 
+## D-023 - A synthetic bridge, so live sessions are not spent debugging our code
+**Stage 01 | active**
+
+A live Training Mode session is expensive: it needs the game running, the
+operator standing still on cue, and Overwolf developer access. Discovering a bug
+in the receiver or the report generator *during* one wastes it.
+
+`protocol/simulator.py` speaks the real wire protocol over a real loopback
+socket and emits Overwolf's documented payload shapes - including the nested
+JSON `location` string, ~1 Hz jittered updates, stationary noise and occasional
+dropped updates. `pubg-bot probe sensors --simulate` drives the entire pipeline
+with it.
+
+The obvious danger is a simulated pass being mistaken for a live one, which the
+operating contract forbids outright. Four independent guards:
+
+1. the report carries `simulated: true`;
+2. the bundle directory is named `simulated-<stamp>` rather than `probe-<stamp>`;
+3. the HTML renders `PIPELINE OK (SIMULATED)` and a warning banner, never
+   `LIVE PASS`, and the CLI prints the same;
+4. a test asserts the verdict element can never contain the live wording.
+
+What it proves: the plumbing works. What it does not prove: anything at all
+about PUBG. Stage 1 acceptance still requires the live probe.
+
+---
+
 ## D-016 - PUBG class ID is 10906, verified two independent ways
 **Stage 01 | active**
 

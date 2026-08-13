@@ -120,6 +120,14 @@ def build_parser() -> argparse.ArgumentParser:
     sensors.add_argument("--port", type=int, default=None)
     sensors.add_argument("--token", default=None, help="Session token; generated if omitted.")
     sensors.add_argument("--connect-timeout", type=float, default=180.0)
+    sensors.add_argument(
+        "--simulate",
+        action="store_true",
+        help=(
+            "Drive the receiver from a synthetic bridge instead of Overwolf. "
+            "Verifies the pipeline without the game; never counts as a live pass."
+        ),
+    )
 
     safety = sub.add_parser("safety", help="Scope lock and live-input interlock.")
     safety_sub = safety.add_subparsers(dest="safety_command", required=True)
@@ -254,6 +262,7 @@ def cmd_probe_sensors(args: argparse.Namespace) -> int:
         host=config.bridge.host,
         port=args.port if args.port is not None else config.bridge.port,
         token=args.token or config.bridge.session_token,
+        simulate=args.simulate,
     )
     report, out_dir = run_sensor_probe(options, paths=paths)
 
@@ -263,7 +272,11 @@ def cmd_probe_sensors(args: argparse.Namespace) -> int:
     for note in report.notes:
         print(f"  note: {note}")
     print()
-    print(f"STAGE 01 PROBE: {'AUTOMATED PASS' if report.passed else 'FAILED'}")
+    if report.simulated:
+        verdict = "PIPELINE OK (SIMULATED)" if report.passed else "FAILED"
+    else:
+        verdict = "LIVE PASS" if report.passed else "FAILED"
+    print(f"STAGE 01 PROBE: {verdict}")
     print(f"evidence: {out_dir}")
     return EXIT_OK if report.passed else EXIT_FAILED_CHECK
 

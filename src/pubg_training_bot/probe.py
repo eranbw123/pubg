@@ -31,6 +31,10 @@ class ProbeOptions:
     host: str = "127.0.0.1"
     port: int = 17311
     token: str = ""
+    #: Drive the receiver from the synthetic bridge instead of Overwolf. Proves
+    #: the pipeline works without spending a live session; never evidence about
+    #: the game, and the resulting report is stamped accordingly.
+    simulate: bool = False
 
 
 def run_sensor_probe(
@@ -52,18 +56,35 @@ def run_sensor_probe(
         if not quiet:
             print(message, flush=True)
 
+    simulator = None
     emit("")
     emit("=" * 70)
-    emit("STAGE 1 SENSOR PROBE - read-only, no input is sent to the game")
-    emit("=" * 70)
-    emit(f"listening on ws://{options.host}:{options.port}")
-    emit(f"session token: {token}")
-    emit("")
-    emit("In Overwolf: load the unpacked bridge app, then start PUBG Training Mode.")
+    if options.simulate:
+        emit("STAGE 1 SENSOR PROBE - SIMULATED (synthetic bridge, PUBG not involved)")
+        emit("=" * 70)
+        emit("This exercises the receiver, normaliser and report pipeline.")
+        emit("It is NOT evidence about the game and cannot be a LIVE PASS.")
+    else:
+        emit("STAGE 1 SENSOR PROBE - read-only, no input is sent to the game")
+        emit("=" * 70)
+        emit(f"listening on ws://{options.host}:{options.port}")
+        emit(f"session token: {token}")
+        emit("")
+        emit("In Overwolf: load the unpacked bridge app, then start PUBG Training Mode.")
     emit(f"Waiting up to {options.connect_timeout_s:.0f}s for the bridge to connect...")
 
     samples: list[ProbeSample] = []
     try:
+        if options.simulate:
+            from .protocol.simulator import SimulatedBridge
+
+            simulator = SimulatedBridge(
+                port=options.port,
+                token=token,
+                still_seconds=options.still_seconds,
+                duration_s=options.duration_s,
+            )
+            simulator.start()
         deadline = clock.monotonic() + options.connect_timeout_s
         while clock.monotonic() < deadline:
             if source.status().messages_received > 0:
@@ -138,14 +159,18 @@ def run_sensor_probe(
             duration_s=duration,
             poll_hz=options.poll_hz,
             still_seconds=options.still_seconds,
+            simulated=options.simulate,
         )
-        out_dir = paths.stage_report_dir("01") / f"probe-{utc_stamp(clock)}"
+        prefix = "simulated" if options.simulate else "probe"
+        out_dir = paths.stage_report_dir("01") / f"{prefix}-{utc_stamp(clock)}"
         written = write_probe_bundle(out_dir, report, samples, source.server.frames)
         emit("")
         for name, path in written.items():
             emit(f"  {name}: {path}")
         return report, out_dir
     finally:
+        if simulator is not None:
+            simulator.stop()
         source.stop()
 
 

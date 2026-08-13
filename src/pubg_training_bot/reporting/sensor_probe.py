@@ -89,6 +89,10 @@ class SensorProbeReport(BaseModel):
     duration_s: float
     poll_hz: float
 
+    #: True when the data came from the synthetic bridge rather than the game.
+    #: A simulated run can never be a LIVE PASS, and every renderer says so.
+    simulated: bool = False
+
     bridge_connected: bool = False
     session_id: str = ""
     frames_received: int = 0
@@ -230,6 +234,7 @@ def build_report(
     duration_s: float,
     poll_hz: float,
     still_seconds: float,
+    simulated: bool = False,
 ) -> SensorProbeReport:
     intervals = [float(v) for v in observations.get("position_intervals", [])]
     positions = [s.position for s in samples if s.position is not None]
@@ -261,6 +266,7 @@ def build_report(
         bot_version=__version__,
         duration_s=round(duration_s, 2),
         poll_hz=poll_hz,
+        simulated=simulated,
         bridge_connected=getattr(status, "messages_received", 0) > 0,
         frames_received=getattr(status, "messages_received", 0),
         frames_rejected_duplicate=getattr(status, "duplicates_dropped", 0),
@@ -292,6 +298,13 @@ def build_report(
         "stationary baseline measured": noise.measured,
     }
 
+    if simulated:
+        report.notes.insert(
+            0,
+            "SIMULATED RUN. Data came from the synthetic bridge, not from PUBG. This "
+            "exercises the pipeline only and is NOT evidence about the game; it can "
+            "never count as a LIVE PASS for Stage 1.",
+        )
     if not report.acceptance["xyz updates arrived"]:
         report.notes.append(
             "NO POSITION DATA. Training Mode did not deliver the 'location' feature. "
@@ -382,12 +395,25 @@ def _html(report: SensorProbeReport, trace: list[ProbeSample]) -> str:
  .ok{{color:#5cd65c;font-weight:600}} .bad{{color:#ff6b6b;font-weight:600}}
  code{{background:#1b1b1b;padding:.1rem .3rem;border-radius:3px}}
  .verdict{{font-size:1.4rem;padding:.6rem 1rem;border-radius:6px;display:inline-block}}
+ .sim{{background:#4a3800;border:1px solid #8a6a00;color:#ffd479;padding:.6rem 1rem;
+       border-radius:6px;font-weight:600}}
 </style></head><body>
-<h1>Stage 1 - live Overwolf sensor probe</h1>
+<h1>Stage 1 - {"SIMULATED" if report.simulated else "live"} Overwolf sensor probe</h1>
 <p>{report.generated_at} &middot; bot {report.bot_version} &middot;
    {report.duration_s}s at {report.poll_hz} Hz polling</p>
+{
+        '<p class="sim">SIMULATED RUN - synthetic bridge, not PUBG. '
+        "This exercises the pipeline and is NOT evidence about the game. "
+        "It can never count as a LIVE PASS.</p>"
+        if report.simulated
+        else ""
+    }
 <p class="verdict {"ok" if report.passed else "bad"}">
-  {"AUTOMATED PASS" if report.passed else "FAILED"}</p>
+  {
+        ("PIPELINE OK (SIMULATED)" if report.simulated else "LIVE PASS")
+        if report.passed
+        else "FAILED"
+    }</p>
 
 <h2>Acceptance</h2>
 <table><tr><th>Criterion</th><th>Result</th></tr>{rows}</table>

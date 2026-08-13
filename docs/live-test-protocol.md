@@ -30,6 +30,19 @@ Then confirm in game: Training Mode, FPP, standing, free-look not held, the
 resolution/FOV/sensitivity/language recorded in the profile, and the key
 bindings recorded in the profile.
 
+## Before the first live session of a stage
+
+Where a stage offers a pipeline dry run, use it. It costs nothing and stops you
+discovering a code bug while standing in Training Mode:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\dry-run-stage-01-probe.ps1
+```
+
+A dry run exercises the code path with synthetic data. It is never evidence
+about the game, and its report says so - `PIPELINE OK (SIMULATED)`, never
+`LIVE PASS`.
+
 ## Session structure
 
 1. Run the stage's check script; confirm `AUTOMATED PASS`.
