@@ -1,0 +1,533 @@
+{
+  "$defs": {
+    "CaptureSettings": {
+      "properties": {
+        "benchmarked": {
+          "default": false,
+          "title": "Benchmarked",
+          "type": "boolean"
+        },
+        "process_name_hint": {
+          "default": "TslGame.exe",
+          "title": "Process Name Hint",
+          "type": "string"
+        },
+        "provider": {
+          "default": "none",
+          "title": "Provider",
+          "type": "string"
+        },
+        "target_fps": {
+          "default": 8.0,
+          "exclusiveMinimum": 0,
+          "title": "Target Fps",
+          "type": "number"
+        },
+        "window_title_hint": {
+          "default": "PLAYERUNKNOWN'S BATTLEGROUNDS",
+          "title": "Window Title Hint",
+          "type": "string"
+        }
+      },
+      "title": "CaptureSettings",
+      "type": "object"
+    },
+    "CoordinateTransform": {
+      "description": "Maps compass heading to a unit displacement in game XY.\n\nDeliberately a general 2x2 matrix rather than \"X is east, Y is north\": the\naxis assignment, handedness and sign are *unknown* until Stage 4 fits them\nfrom real walk data. ``fitted=False`` means the identity placeholder below\nhas never been validated and must not be used for navigation.",
+      "properties": {
+        "fit_rmse_deg": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Fit Rmse Deg"
+        },
+        "fit_sample_count": {
+          "default": 0,
+          "title": "Fit Sample Count",
+          "type": "integer"
+        },
+        "fitted": {
+          "default": false,
+          "title": "Fitted",
+          "type": "boolean"
+        },
+        "m00": {
+          "default": 1.0,
+          "title": "M00",
+          "type": "number"
+        },
+        "m01": {
+          "default": 0.0,
+          "title": "M01",
+          "type": "number"
+        },
+        "m10": {
+          "default": 0.0,
+          "title": "M10",
+          "type": "number"
+        },
+        "m11": {
+          "default": 1.0,
+          "title": "M11",
+          "type": "number"
+        },
+        "units_per_metre": {
+          "default": 1.0,
+          "exclusiveMinimum": 0,
+          "title": "Units Per Metre",
+          "type": "number"
+        },
+        "z_up_sign": {
+          "default": 1,
+          "title": "Z Up Sign",
+          "type": "integer"
+        }
+      },
+      "title": "CoordinateTransform",
+      "type": "object"
+    },
+    "CropRegion": {
+      "description": "A HUD region in **normalised** window coordinates (0..1).\n\nNormalised so a profile survives a resolution change with only a\nre-verification step rather than a rewrite. ``calibrated=False`` marks a\nplaceholder that has never been checked against a real frame - vision code\nmust refuse to trust it.",
+      "properties": {
+        "calibrated": {
+          "default": false,
+          "title": "Calibrated",
+          "type": "boolean"
+        },
+        "height": {
+          "exclusiveMinimum": 0.0,
+          "maximum": 1.0,
+          "title": "Height",
+          "type": "number"
+        },
+        "note": {
+          "default": "",
+          "title": "Note",
+          "type": "string"
+        },
+        "width": {
+          "exclusiveMinimum": 0.0,
+          "maximum": 1.0,
+          "title": "Width",
+          "type": "number"
+        },
+        "x": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "X",
+          "type": "number"
+        },
+        "y": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Y",
+          "type": "number"
+        }
+      },
+      "required": [
+        "x",
+        "y",
+        "width",
+        "height"
+      ],
+      "title": "CropRegion",
+      "type": "object"
+    },
+    "KeyBindings": {
+      "description": "Key names are resolved to scan codes by the actuation layer (Stage 3),\nso these stay layout-independent.",
+      "properties": {
+        "backward": {
+          "default": "s",
+          "title": "Backward",
+          "type": "string"
+        },
+        "crouch": {
+          "default": "left_ctrl",
+          "title": "Crouch",
+          "type": "string"
+        },
+        "forward": {
+          "default": "w",
+          "title": "Forward",
+          "type": "string"
+        },
+        "free_look": {
+          "default": "left_alt",
+          "title": "Free Look",
+          "type": "string"
+        },
+        "interact": {
+          "default": "f",
+          "title": "Interact",
+          "type": "string"
+        },
+        "inventory": {
+          "default": "tab",
+          "title": "Inventory",
+          "type": "string"
+        },
+        "jump": {
+          "default": "space",
+          "title": "Jump",
+          "type": "string"
+        },
+        "map_key": {
+          "default": "m",
+          "title": "Map Key",
+          "type": "string"
+        },
+        "sprint": {
+          "default": "left_shift",
+          "title": "Sprint",
+          "type": "string"
+        },
+        "strafe_left": {
+          "default": "a",
+          "title": "Strafe Left",
+          "type": "string"
+        },
+        "strafe_right": {
+          "default": "d",
+          "title": "Strafe Right",
+          "type": "string"
+        },
+        "walk_toggle": {
+          "default": "left_alt",
+          "title": "Walk Toggle",
+          "type": "string"
+        }
+      },
+      "title": "KeyBindings",
+      "type": "object"
+    },
+    "MouseTurnCalibration": {
+      "properties": {
+        "degrees_per_unit": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Degrees Per Unit"
+        },
+        "max_pulse_units": {
+          "default": 400,
+          "exclusiveMinimum": 0,
+          "title": "Max Pulse Units",
+          "type": "integer"
+        },
+        "measured": {
+          "default": false,
+          "title": "Measured",
+          "type": "boolean"
+        },
+        "min_effective_units": {
+          "default": 2,
+          "exclusiveMinimum": 0,
+          "title": "Min Effective Units",
+          "type": "integer"
+        },
+        "repeatability_std_deg": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Repeatability Std Deg"
+        }
+      },
+      "title": "MouseTurnCalibration",
+      "type": "object"
+    },
+    "MovementCalibration": {
+      "properties": {
+        "actuation_latency_s": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Actuation Latency S"
+        },
+        "measured": {
+          "default": false,
+          "title": "Measured",
+          "type": "boolean"
+        },
+        "run_units_per_second": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Run Units Per Second"
+        },
+        "stationary_noise_p95_units": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Stationary Noise P95 Units"
+        },
+        "walk_units_per_second": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Walk Units Per Second"
+        }
+      },
+      "title": "MovementCalibration",
+      "type": "object"
+    },
+    "Rect": {
+      "description": "Pixel rectangle (screen or window space).",
+      "properties": {
+        "height": {
+          "exclusiveMinimum": 0,
+          "title": "Height",
+          "type": "integer"
+        },
+        "left": {
+          "title": "Left",
+          "type": "integer"
+        },
+        "top": {
+          "title": "Top",
+          "type": "integer"
+        },
+        "width": {
+          "exclusiveMinimum": 0,
+          "title": "Width",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "left",
+        "top",
+        "width",
+        "height"
+      ],
+      "title": "Rect",
+      "type": "object"
+    },
+    "ViewMode": {
+      "enum": [
+        "fpp",
+        "tpp",
+        "unknown"
+      ],
+      "title": "ViewMode",
+      "type": "string"
+    }
+  },
+  "$id": "https://pubg-training-bot.local/schemas/game-profile.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Versioned bundle of display, game-settings and calibration state.",
+  "properties": {
+    "ads_sensitivity": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Ads Sensitivity"
+    },
+    "capture": {
+      "$ref": "#/$defs/CaptureSettings"
+    },
+    "compass_crop": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/CropRegion"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "coordinate_transform": {
+      "$ref": "#/$defs/CoordinateTransform"
+    },
+    "description": {
+      "default": "",
+      "title": "Description",
+      "type": "string"
+    },
+    "dpi_scale": {
+      "default": 1.0,
+      "exclusiveMinimum": 0,
+      "title": "Dpi Scale",
+      "type": "number"
+    },
+    "fov": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Fov"
+    },
+    "interaction_crop": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/CropRegion"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "inventory_crop": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/CropRegion"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "key_bindings": {
+      "$ref": "#/$defs/KeyBindings"
+    },
+    "language": {
+      "default": "en",
+      "title": "Language",
+      "type": "string"
+    },
+    "map_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Map Id"
+    },
+    "mouse_sensitivity": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Mouse Sensitivity"
+    },
+    "mouse_turn": {
+      "$ref": "#/$defs/MouseTurnCalibration"
+    },
+    "movement": {
+      "$ref": "#/$defs/MovementCalibration"
+    },
+    "notes": {
+      "default": "",
+      "title": "Notes",
+      "type": "string"
+    },
+    "profile_id": {
+      "title": "Profile Id",
+      "type": "string"
+    },
+    "schema_version": {
+      "default": 1,
+      "minimum": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "screen_height": {
+      "exclusiveMinimum": 0,
+      "title": "Screen Height",
+      "type": "integer"
+    },
+    "screen_width": {
+      "exclusiveMinimum": 0,
+      "title": "Screen Width",
+      "type": "integer"
+    },
+    "ui_scale": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Ui Scale"
+    },
+    "view": {
+      "$ref": "#/$defs/ViewMode",
+      "default": "fpp"
+    },
+    "window_rect": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Rect"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    }
+  },
+  "required": [
+    "profile_id",
+    "screen_width",
+    "screen_height"
+  ],
+  "title": "GameProfile",
+  "type": "object"
+}

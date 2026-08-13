@@ -1,0 +1,81 @@
+# Default runtime configuration.
+#
+# Every threshold that affects safety or control lives here rather than in code.
+# Values marked PROVISIONAL are placeholders that have not been measured against
+# the running game yet; the stage that measures them replaces them and clears
+# the provisional flag.
+#
+# Schema: src/pubg_training_bot/config/settings.py (AppConfig)
+
+version: 1
+
+# Set by Stage 2 (profile) and Stage 5 (route). Null means "not chosen yet",
+# which the controller treats as a hard stop rather than a default.
+active_profile: null
+active_route: null
+
+safety:
+  # Dry-run is the default. --live is required to change it, and Stage 3 must
+  # be accepted before a live actuator exists at all.
+  dry_run: true
+  require_training_mode_ack: true
+  require_foreground: true
+  watchdog_timeout_s: 2.0
+  max_run_duration_s: 600.0
+
+hotkeys:
+  arm: f9
+  emergency_stop: f10
+  marker_route_start: f5
+  marker_checkpoint: f6
+  marker_door: f7
+  marker_loot: f8
+  marker_stair_start: ctrl+f5
+  marker_stair_end: ctrl+f6
+  marker_room_transition: ctrl+f7
+  marker_route_end: ctrl+f8
+  cancel_recording: ctrl+f12
+
+bridge:
+  # Loopback only, never a routable interface.
+  host: 127.0.0.1
+  port: 17311
+  # Empty means: generate a fresh random session token at startup.
+  session_token: ""
+  heartbeat_interval_s: 1.0
+  heartbeat_timeout_s: 5.0
+  reconnect_backoff_s: 1.0
+
+capture:
+  # PROVISIONAL: provider is chosen by measurement in Stage 2.
+  provider: none
+  target_fps: 8.0
+  save_full_frames_on:
+    - state_change
+    - semantic_node
+    - failure
+  periodic_full_frame_interval_s: 10.0
+
+freshness:
+  # PROVISIONAL. Assumption under test: ground position updates arrive ~1/s,
+  # so 2.5 s tolerates two missed updates. Replaced by Stage 1 measurements.
+  max_location_age_s: 2.5
+  # PROVISIONAL. Assumes >=5 useful heading observations/second (Stage 2/4).
+  max_heading_age_s: 0.6
+  max_frame_age_s: 0.5
+  min_heading_confidence: 0.6
+  provisional: true
+
+navigation:
+  # PROVISIONAL until Stage 6 tunes them against the fake world and Stage 7
+  # against the game.
+  tick_interval_s: 0.1
+  heading_align_tolerance_deg: 8.0
+  critical_heading_tolerance_deg: 4.0
+  default_pulse_ms: 350
+  critical_pulse_ms: 150
+
+logging:
+  level: INFO
+  jsonl: true
+  console: true

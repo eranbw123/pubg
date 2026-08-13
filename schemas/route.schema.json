@@ -1,0 +1,533 @@
+{
+  "$defs": {
+    "BoxRegion": {
+      "properties": {
+        "kind": {
+          "const": "box",
+          "default": "box",
+          "title": "Kind",
+          "type": "string"
+        },
+        "max_corner": {
+          "$ref": "#/$defs/Vec3"
+        },
+        "min_corner": {
+          "$ref": "#/$defs/Vec3"
+        }
+      },
+      "required": [
+        "min_corner",
+        "max_corner"
+      ],
+      "title": "BoxRegion",
+      "type": "object"
+    },
+    "CircleRegion": {
+      "properties": {
+        "center": {
+          "$ref": "#/$defs/Vec3"
+        },
+        "kind": {
+          "const": "circle",
+          "default": "circle",
+          "title": "Kind",
+          "type": "string"
+        },
+        "radius_units": {
+          "exclusiveMinimum": 0,
+          "title": "Radius Units",
+          "type": "number"
+        },
+        "z_tolerance_units": {
+          "default": 5.0,
+          "exclusiveMinimum": 0,
+          "title": "Z Tolerance Units",
+          "type": "number"
+        }
+      },
+      "required": [
+        "center",
+        "radius_units"
+      ],
+      "title": "CircleRegion",
+      "type": "object"
+    },
+    "MovementMode": {
+      "enum": [
+        "walk",
+        "run",
+        "crouch_walk",
+        "careful"
+      ],
+      "title": "MovementMode",
+      "type": "string"
+    },
+    "NodeKind": {
+      "enum": [
+        "start",
+        "transit",
+        "checkpoint",
+        "door",
+        "loot_scan",
+        "stair_start",
+        "stair_end",
+        "room_entry",
+        "room_exit",
+        "finish"
+      ],
+      "title": "NodeKind",
+      "type": "string"
+    },
+    "RecoveryPolicy": {
+      "description": "Bounded recovery budget. Unbounded retrying is a defect, not a fallback.",
+      "properties": {
+        "back_off_pulse_ms": {
+          "default": 250,
+          "exclusiveMinimum": 0,
+          "title": "Back Off Pulse Ms",
+          "type": "integer"
+        },
+        "max_attempts_per_node": {
+          "default": 4,
+          "minimum": 0,
+          "title": "Max Attempts Per Node",
+          "type": "integer"
+        },
+        "max_attempts_per_run": {
+          "default": 12,
+          "minimum": 0,
+          "title": "Max Attempts Per Run",
+          "type": "integer"
+        },
+        "max_level": {
+          "default": 7,
+          "maximum": 7,
+          "minimum": 0,
+          "title": "Max Level",
+          "type": "integer"
+        },
+        "policy_id": {
+          "default": "default",
+          "title": "Policy Id",
+          "type": "string"
+        },
+        "settle_seconds": {
+          "default": 1.5,
+          "exclusiveMinimum": 0,
+          "title": "Settle Seconds",
+          "type": "number"
+        },
+        "sidestep_pulse_ms": {
+          "default": 250,
+          "exclusiveMinimum": 0,
+          "title": "Sidestep Pulse Ms",
+          "type": "integer"
+        }
+      },
+      "title": "RecoveryPolicy",
+      "type": "object"
+    },
+    "RouteEdge": {
+      "additionalProperties": false,
+      "properties": {
+        "critical": {
+          "default": false,
+          "title": "Critical",
+          "type": "boolean"
+        },
+        "edge_id": {
+          "title": "Edge Id",
+          "type": "string"
+        },
+        "lookahead_max_units": {
+          "default": 12.0,
+          "exclusiveMinimum": 0,
+          "title": "Lookahead Max Units",
+          "type": "number"
+        },
+        "lookahead_min_units": {
+          "default": 2.0,
+          "exclusiveMinimum": 0,
+          "title": "Lookahead Min Units",
+          "type": "number"
+        },
+        "max_cross_track_units": {
+          "default": 6.0,
+          "exclusiveMinimum": 0,
+          "title": "Max Cross Track Units",
+          "type": "number"
+        },
+        "max_duration_s": {
+          "default": 60.0,
+          "exclusiveMinimum": 0,
+          "title": "Max Duration S",
+          "type": "number"
+        },
+        "movement_mode": {
+          "$ref": "#/$defs/MovementMode",
+          "default": "walk"
+        },
+        "source_id": {
+          "title": "Source Id",
+          "type": "string"
+        },
+        "target_id": {
+          "title": "Target Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "edge_id",
+        "source_id",
+        "target_id"
+      ],
+      "title": "RouteEdge",
+      "type": "object"
+    },
+    "RouteNode": {
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "$ref": "#/$defs/SemanticAction",
+          "default": "none"
+        },
+        "desired_heading_deg": {
+          "anyOf": [
+            {
+              "exclusiveMaximum": 360.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Desired Heading Deg"
+        },
+        "expected_z_delta_units": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Expected Z Delta Units"
+        },
+        "heading_tolerance_deg": {
+          "default": 15.0,
+          "exclusiveMinimum": 0.0,
+          "maximum": 180.0,
+          "title": "Heading Tolerance Deg",
+          "type": "number"
+        },
+        "kind": {
+          "$ref": "#/$defs/NodeKind"
+        },
+        "label": {
+          "default": "",
+          "title": "Label",
+          "type": "string"
+        },
+        "max_duration_s": {
+          "default": 30.0,
+          "exclusiveMinimum": 0,
+          "title": "Max Duration S",
+          "type": "number"
+        },
+        "movement_mode": {
+          "$ref": "#/$defs/MovementMode",
+          "default": "walk"
+        },
+        "node_id": {
+          "title": "Node Id",
+          "type": "string"
+        },
+        "position": {
+          "$ref": "#/$defs/Vec3"
+        },
+        "recovery_policy_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Recovery Policy Id"
+        },
+        "visual_anchor_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Visual Anchor Id"
+        },
+        "xy_tolerance_units": {
+          "exclusiveMinimum": 0,
+          "title": "Xy Tolerance Units",
+          "type": "number"
+        },
+        "z_tolerance_units": {
+          "default": 5.0,
+          "exclusiveMinimum": 0,
+          "title": "Z Tolerance Units",
+          "type": "number"
+        }
+      },
+      "required": [
+        "node_id",
+        "kind",
+        "position",
+        "xy_tolerance_units"
+      ],
+      "title": "RouteNode",
+      "type": "object"
+    },
+    "SemanticAction": {
+      "enum": [
+        "none",
+        "open_door",
+        "cross_door",
+        "climb_stairs",
+        "descend_stairs",
+        "scan_and_loot",
+        "verify_anchor"
+      ],
+      "title": "SemanticAction",
+      "type": "string"
+    },
+    "Vec3": {
+      "properties": {
+        "x": {
+          "title": "X",
+          "type": "number"
+        },
+        "y": {
+          "title": "Y",
+          "type": "number"
+        },
+        "z": {
+          "title": "Z",
+          "type": "number"
+        }
+      },
+      "required": [
+        "x",
+        "y",
+        "z"
+      ],
+      "title": "Vec3",
+      "type": "object"
+    },
+    "VisualAnchor": {
+      "description": "A route-specific reference image used only at choke points.\n\nDeterministic matching only (no learned models). Must abstain below\n``min_score`` rather than report a weak match.",
+      "properties": {
+        "anchor_id": {
+          "title": "Anchor Id",
+          "type": "string"
+        },
+        "expected_heading_deg": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Expected Heading Deg"
+        },
+        "image_path": {
+          "title": "Image Path",
+          "type": "string"
+        },
+        "min_score": {
+          "default": 0.7,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Min Score",
+          "type": "number"
+        },
+        "note": {
+          "default": "",
+          "title": "Note",
+          "type": "string"
+        }
+      },
+      "required": [
+        "anchor_id",
+        "image_path"
+      ],
+      "title": "VisualAnchor",
+      "type": "object"
+    }
+  },
+  "$id": "https://pubg-training-bot.local/schemas/route.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "edges": {
+      "items": {
+        "$ref": "#/$defs/RouteEdge"
+      },
+      "minItems": 1,
+      "title": "Edges",
+      "type": "array"
+    },
+    "end_region": {
+      "discriminator": {
+        "mapping": {
+          "box": "#/$defs/BoxRegion",
+          "circle": "#/$defs/CircleRegion"
+        },
+        "propertyName": "kind"
+      },
+      "oneOf": [
+        {
+          "$ref": "#/$defs/CircleRegion"
+        },
+        {
+          "$ref": "#/$defs/BoxRegion"
+        }
+      ],
+      "title": "End Region"
+    },
+    "expected_stance": {
+      "default": "standing",
+      "title": "Expected Stance",
+      "type": "string"
+    },
+    "expected_view": {
+      "default": "fpp",
+      "title": "Expected View",
+      "type": "string"
+    },
+    "loot_policy_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Loot Policy Id"
+    },
+    "map_id": {
+      "title": "Map Id",
+      "type": "string"
+    },
+    "name": {
+      "default": "",
+      "title": "Name",
+      "type": "string"
+    },
+    "nodes": {
+      "items": {
+        "$ref": "#/$defs/RouteNode"
+      },
+      "minItems": 2,
+      "title": "Nodes",
+      "type": "array"
+    },
+    "notes": {
+      "default": "",
+      "title": "Notes",
+      "type": "string"
+    },
+    "profile_fingerprint": {
+      "title": "Profile Fingerprint",
+      "type": "string"
+    },
+    "recorded_at": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Recorded At"
+    },
+    "recovery_policy": {
+      "$ref": "#/$defs/RecoveryPolicy"
+    },
+    "route_id": {
+      "title": "Route Id",
+      "type": "string"
+    },
+    "schema_version": {
+      "default": 1,
+      "minimum": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "source_recording_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Source Recording Id"
+    },
+    "start_region": {
+      "discriminator": {
+        "mapping": {
+          "box": "#/$defs/BoxRegion",
+          "circle": "#/$defs/CircleRegion"
+        },
+        "propertyName": "kind"
+      },
+      "oneOf": [
+        {
+          "$ref": "#/$defs/CircleRegion"
+        },
+        {
+          "$ref": "#/$defs/BoxRegion"
+        }
+      ],
+      "title": "Start Region"
+    },
+    "visual_anchors": {
+      "items": {
+        "$ref": "#/$defs/VisualAnchor"
+      },
+      "title": "Visual Anchors",
+      "type": "array"
+    },
+    "world_origin": {
+      "$ref": "#/$defs/Vec3"
+    }
+  },
+  "required": [
+    "route_id",
+    "map_id",
+    "profile_fingerprint",
+    "world_origin",
+    "start_region",
+    "end_region",
+    "nodes",
+    "edges"
+  ],
+  "title": "Route",
+  "type": "object"
+}

@@ -1,0 +1,68 @@
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pubg-training-bot"
+version = "0.1.0"
+description = "Windows-only PUBG Training Mode teach-and-repeat navigation/looting MVP (external input + documented Overwolf events only)."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "Proprietary" }
+
+# Stage 0 keeps the dependency surface deliberately small.
+# Heavier capture/vision dependencies are opt-in extras, added at the stage that needs them.
+dependencies = [
+    "pydantic>=2.9",
+    "PyYAML>=6.0",
+    "jsonschema>=4.23",
+]
+
+[project.optional-dependencies]
+# Stage 2 (frame capture) — not installed by Stage 0 bootstrap.
+capture = [
+    "mss>=9.0",
+    "Pillow>=10.4",
+    "numpy>=2.1",
+    "pywin32>=306",
+]
+# Stage 4 (heading recognition) — not installed by Stage 0 bootstrap.
+vision = [
+    "opencv-python-headless>=4.10",
+    "numpy>=2.1",
+]
+# Stage 1 (bridge transport).
+bridge = [
+    "websockets>=13.0",
+]
+dev = [
+    "pytest>=8.3",
+    "ruff>=0.6",
+]
+
+[project.scripts]
+pubg-bot = "pubg_training_bot.cli.main:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/pubg_training_bot"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q --strict-markers"
+markers = [
+    "live: touches the running game; NEVER selected by default (deselect with '-m \"not live\"')",
+]
+# Live tests must be opt-in only.
+filterwarnings = ["error::DeprecationWarning:pubg_training_bot.*"]
+
+[tool.ruff]
+line-length = 100
+src = ["src", "tests"]
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM"]
+ignore = ["B008"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["E501"]

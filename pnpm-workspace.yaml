@@ -1,0 +1,5 @@
+# TypeScript workspace for the Overwolf bridge.
+# The bridge itself is implemented in Stage 1; this file reserves the layout so
+# the workspace root does not move once it exists.
+packages:
+  - "apps/*"

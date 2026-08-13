@@ -1,0 +1,130 @@
+{
+  "$defs": {
+    "MessageType": {
+      "description": "Bridge -> controller message kinds.",
+      "enum": [
+        "hello",
+        "heartbeat",
+        "feature_status",
+        "info_update",
+        "game_event",
+        "game_info",
+        "screenshot",
+        "bridge_error",
+        "unknown"
+      ],
+      "title": "MessageType",
+      "type": "string"
+    },
+    "ParseWarning": {
+      "description": "A normalisation problem that must stay visible instead of being swallowed.",
+      "properties": {
+        "code": {
+          "title": "Code",
+          "type": "string"
+        },
+        "detail": {
+          "default": "",
+          "title": "Detail",
+          "type": "string"
+        },
+        "field": {
+          "title": "Field",
+          "type": "string"
+        }
+      },
+      "required": [
+        "field",
+        "code"
+      ],
+      "title": "ParseWarning",
+      "type": "object"
+    }
+  },
+  "$id": "https://pubg-training-bot.local/schemas/bridge-message.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "One message received from the Overwolf bridge.\n\nTimestamps are kept separately on purpose: the bridge clock and the\ncontroller clock are different clocks, and only the controller's monotonic\nclock may drive control decisions.",
+  "properties": {
+    "bridge_monotonic_ts": {
+      "minimum": 0.0,
+      "title": "Bridge Monotonic Ts",
+      "type": "number"
+    },
+    "controller_receive_ts": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Controller Receive Ts"
+    },
+    "normalized": {
+      "anyOf": [
+        {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Normalized"
+    },
+    "parse_warnings": {
+      "items": {
+        "$ref": "#/$defs/ParseWarning"
+      },
+      "title": "Parse Warnings",
+      "type": "array"
+    },
+    "raw": {
+      "additionalProperties": true,
+      "title": "Raw",
+      "type": "object"
+    },
+    "schema_version": {
+      "default": 1,
+      "minimum": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "sequence": {
+      "minimum": 0,
+      "title": "Sequence",
+      "type": "integer"
+    },
+    "session_id": {
+      "default": "",
+      "title": "Session Id",
+      "type": "string"
+    },
+    "source_timestamp": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Source Timestamp"
+    },
+    "type": {
+      "$ref": "#/$defs/MessageType",
+      "default": "unknown"
+    }
+  },
+  "required": [
+    "sequence",
+    "bridge_monotonic_ts"
+  ],
+  "title": "BridgeMessage",
+  "type": "object"
+}
