@@ -107,6 +107,20 @@ def build_parser() -> argparse.ArgumentParser:
         help="Do not write; exit non-zero if committed schemas are stale.",
     )
 
+    probe = sub.add_parser("probe", help="Live, read-only feasibility probes.")
+    probe_sub = probe.add_subparsers(dest="probe_command", required=True)
+    sensors = probe_sub.add_parser(
+        "sensors", help="Stage 1: measure what the live Overwolf stream provides."
+    )
+    sensors.add_argument("--duration", type=float, default=120.0, help="Seconds to record.")
+    sensors.add_argument(
+        "--still", type=float, default=20.0, help="Opening seconds spent motionless."
+    )
+    sensors.add_argument("--poll-hz", type=float, default=10.0)
+    sensors.add_argument("--port", type=int, default=None)
+    sensors.add_argument("--token", default=None, help="Session token; generated if omitted.")
+    sensors.add_argument("--connect-timeout", type=float, default=180.0)
+
     safety = sub.add_parser("safety", help="Scope lock and live-input interlock.")
     safety_sub = safety.add_subparsers(dest="safety_command", required=True)
     scan = safety_sub.add_parser("scan", help="Scan the source tree for out-of-scope techniques.")
@@ -226,6 +240,34 @@ def cmd_schemas_export(args: argparse.Namespace) -> int:
     return EXIT_OK
 
 
+def cmd_probe_sensors(args: argparse.Namespace) -> int:
+    from ..config.loader import load_config
+    from ..probe import ProbeOptions, run_sensor_probe
+
+    paths = default_paths()
+    config = load_config(paths=paths)
+    options = ProbeOptions(
+        duration_s=args.duration,
+        poll_hz=args.poll_hz,
+        still_seconds=args.still,
+        connect_timeout_s=args.connect_timeout,
+        host=config.bridge.host,
+        port=args.port if args.port is not None else config.bridge.port,
+        token=args.token or config.bridge.session_token,
+    )
+    report, out_dir = run_sensor_probe(options, paths=paths)
+
+    print()
+    for name, ok in report.acceptance.items():
+        print(f"  [{'PASS' if ok else 'FAIL'}] {name}")
+    for note in report.notes:
+        print(f"  note: {note}")
+    print()
+    print(f"STAGE 01 PROBE: {'AUTOMATED PASS' if report.passed else 'FAILED'}")
+    print(f"evidence: {out_dir}")
+    return EXIT_OK if report.passed else EXIT_FAILED_CHECK
+
+
 def cmd_safety_scan(args: argparse.Namespace) -> int:
     report = scan_source()
     if args.json:
@@ -259,6 +301,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             return cmd_stage_set(args)
         if args.stage_command == "report":
             return cmd_stage_report(args)
+    if args.command == "probe" and args.probe_command == "sensors":
+        return cmd_probe_sensors(args)
     if args.command == "schemas":
         return cmd_schemas_export(args)
     if args.command == "safety":

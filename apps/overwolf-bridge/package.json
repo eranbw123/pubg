@@ -1,0 +1,19 @@
+{
+  "name": "@pubg-training-bot/overwolf-bridge",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Overwolf app that forwards documented PUBG game events to the Python controller. Sensor only; never produces game input.",
+  "type": "module",
+  "scripts": {
+    "build": "tsc --build && node scripts/build.mjs",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "clean": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\""
+  },
+  "devDependencies": {
+    "@overwolf/types": "^3.24.12",
+    "@types/node": "^22.7.4",
+    "typescript": "^5.6.2",
+    "vitest": "^2.1.1"
+  }
+}

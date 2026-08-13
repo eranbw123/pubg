@@ -26,7 +26,7 @@ class ScriptedSample:
     heading_confidence: float = 1.0
     foreground: bool = True
     map_id: str | None = "TRAINING"
-    phase: MatchPhase = MatchPhase.PLAYING
+    phase: MatchPhase = MatchPhase.LANDED
     view: ViewMode = ViewMode.FPP
     stance: Stance = Stance.STANDING
     movement: MovementState = MovementState.IDLE

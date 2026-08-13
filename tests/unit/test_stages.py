@@ -123,20 +123,37 @@ def test_rendered_markdown_never_claims_unaccepted_criteria_are_met(
     assert "- [x]" in render_status_markdown(load_state(tmp_paths))
 
 
-def test_later_stages_are_not_implemented_yet() -> None:
-    """Stage 0 must not have quietly built later stages."""
+def test_stages_beyond_the_current_gate_are_not_implemented() -> None:
+    """Guards against building ahead of the gate.
+
+    This list shrinks as stages are accepted: ``protocol`` moved out of it when
+    Stage 1 legitimately introduced the bridge transport. Anything still listed
+    belongs to a stage that has not started.
+    """
+    import pathlib
+
     import pubg_training_bot
 
-    package_dir = __import__("pathlib").Path(pubg_training_bot.__file__).parent
-    forbidden_modules = [
-        "navigation",
-        "behaviors",
-        "recovery",
-        "recording",
-        "replay",
-        "calibration",
-        "routes",
-        "protocol",
-    ]
-    present = [name for name in forbidden_modules if (package_dir / name).exists()]
-    assert present == [], f"later-stage packages must not exist yet: {present}"
+    package_dir = pathlib.Path(pubg_training_bot.__file__).parent
+    not_yet_started = {
+        "calibration": "04",
+        "recording": "05",
+        "routes": "05",
+        "navigation": "06",
+        "replay": "06",
+        "behaviors": "08",
+        "recovery": "11",
+    }
+    present = [name for name in not_yet_started if (package_dir / name).exists()]
+    assert present == [], "packages exist for stages that have not started: " + ", ".join(
+        f"{name} (stage {not_yet_started[name]})" for name in present
+    )
+
+
+def test_stage_one_modules_exist_now_that_stage_one_has_started() -> None:
+    import pathlib
+
+    import pubg_training_bot
+
+    package_dir = pathlib.Path(pubg_training_bot.__file__).parent
+    assert (package_dir / "protocol").is_dir(), "Stage 1 introduces the bridge transport"

@@ -96,7 +96,7 @@ class ExpectedContext(BaseModel):
     map_id: str | None = None
     view: ViewMode | None = None
     stance: Stance | None = None
-    phases: tuple[MatchPhase, ...] = (MatchPhase.PLAYING,)
+    phases: tuple[MatchPhase, ...] = (MatchPhase.LANDED,)
     require_foreground: bool = True
     require_free_view_inactive: bool = True
     require_frame: bool = False

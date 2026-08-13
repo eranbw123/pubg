@@ -1,0 +1,48 @@
+{
+  "manifest_version": 1,
+  "type": "WebApp",
+  "meta": {
+    "name": "PUBG Training Bridge",
+    "author": "pubg-training-bot",
+    "version": "0.1.0",
+    "minimum-overwolf-version": "0.200.0",
+    "description": "Forwards documented PUBG game events to a local controller over loopback. Sensor only: this app never produces game input.",
+    "dock_button_title": "PUBG Bridge",
+    "icon": "icons/icon.png",
+    "icon_gray": "icons/icon_gray.png"
+  },
+  "permissions": ["GameInfo"],
+  "data": {
+    "start_window": "background",
+    "windows": {
+      "background": {
+        "file": "background.html",
+        "is_background_page": true,
+        "show_in_taskbar": false
+      },
+      "debug": {
+        "file": "debug.html",
+        "desktop_only": true,
+        "resizable": true,
+        "transparent": false,
+        "show_in_taskbar": true,
+        "size": { "width": 620, "height": 640 },
+        "min_size": { "width": 480, "height": 420 }
+      }
+    },
+    "game_targeting": {
+      "type": "dedicated",
+      "game_ids": [10906]
+    },
+    "launch_events": [
+      {
+        "event": "GameLaunch",
+        "event_data": { "game_ids": [10906] },
+        "start_minimized": true
+      }
+    ],
+    "externally_connectable": {
+      "matches": ["http://localhost:*", "ws://127.0.0.1:*"]
+    }
+  }
+}

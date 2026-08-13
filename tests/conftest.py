@@ -48,7 +48,7 @@ def expected() -> ExpectedContext:
         map_id="TRAINING",
         view=ViewMode.FPP,
         stance=Stance.STANDING,
-        phases=(MatchPhase.PLAYING,),
+        phases=(MatchPhase.LANDED,),
     )
 
 

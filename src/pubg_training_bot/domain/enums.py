@@ -61,12 +61,21 @@ class MovementState(StrEnum):
 
 
 class MatchPhase(StrEnum):
-    """Observed match phase. Real values are recorded live in Stage 1."""
+    """PUBG's own documented phase vocabulary.
 
-    LOADING = "loading"
+    Deliberately the game's values rather than a generic loading/playing/finished
+    mapping: a lossy translation would hide which phase Training Mode actually
+    reports, and that is one of the things Stage 1 exists to observe.
+    """
+
     LOBBY = "lobby"
-    PLAYING = "playing"
-    FINISHED = "finished"
+    LOADING_SCREEN = "loading_screen"
+    AIRFIELD = "airfield"
+    AIRCRAFT = "aircraft"
+    FREEFLY = "freefly"
+    #: On the ground and in control of the character - the only phase in which
+    #: navigation may run.
+    LANDED = "landed"
     UNKNOWN = "unknown"
 
 

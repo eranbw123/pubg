@@ -216,7 +216,7 @@ def test_sensor_guard_blocks_on_stale_data(clock: FakeClock, policy, expected) -
             monotonic_ts=clock.monotonic(),
             bridge_health=BridgeHealth.CONNECTED,
             map_id="TRAINING",
-            phase=MatchPhase.PLAYING,
+            phase=MatchPhase.LANDED,
             view=ViewMode.FPP,
             stance=Stance.STANDING,
             free_view_active=False,

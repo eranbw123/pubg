@@ -113,7 +113,48 @@ Look for state written into the real repository. Tests that write must use the
 It should not exist. No automated test may send real input or require PUBG.
 Live probes belong in `scripts/check-stage-NN.ps1` with all guards enabled.
 
-## Sensors, capture, input, navigation
+## Stage 1 - the bridge and the sensor probe
 
-Filled in by Stages 1, 2, 3 and 6-12 respectively, from failures actually
-observed rather than anticipated.
+**"Unauthorized App" when loading `apps\overwolf-bridge\dist`**
+The Overwolf account is not whitelisted for development (R-016). Nothing in
+Stage 1 works until that is granted; request it from `developers@overwolf.com`.
+
+**The probe prints a token but the bridge never connects**
+The token is per-run unless pinned. Open the bridge's debug window from the
+Overwolf dock, paste the token the probe printed, check the port matches
+(17311 by default), then press "Save & reconnect". The debug window shows
+`connected` and `authenticated` separately - `connected: true` with
+`authenticated: false` means the token is wrong.
+
+To stop re-pasting it every run, set a fixed `bridge.session_token` in
+`config/default.yaml`.
+
+**`auth rejected: invalid session token`**
+Expected when the pasted token is stale. The bridge deliberately does *not*
+retry after a rejected token: a wrong token is a configuration error, and
+reconnecting in a loop would just hammer the controller.
+
+**Bridge connects but no `location` updates arrive**
+Check the `feature_status` line in the probe output. If `location` registered
+but never updates, that is the finding Stage 1 exists to produce - it is risk
+R-002 and the stage fails honestly rather than substituting anything.
+
+**`phase` shows `unknown` with a warning**
+Training Mode reported a value outside Overwolf's documented set
+(`lobby`, `loading_screen`, `airfield`, `aircraft`, `freefly`, `landed`). The
+raw value is in the warning detail and in `events.jsonl`. Add it to `MatchPhase`
+and record the observation in `docs/decisions.md`; do not map it onto an
+existing value.
+
+**`pnpm install` fails with `ERR_PNPM_IGNORED_BUILDS`**
+pnpm 11 requires build scripts to be approved. `esbuild` is already declared in
+`pnpm-workspace.yaml` under `allowBuilds`; re-run `pnpm install`.
+
+**`Cannot find type definition file for '@overwolf/types'`**
+Run `pnpm install` at the repo root. The package is `@overwolf/types` -
+`@types/overwolf` does not exist on npm.
+
+## Capture, input, navigation
+
+Filled in by Stages 2, 3 and 6-12 respectively, from failures actually observed
+rather than anticipated.

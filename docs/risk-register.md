@@ -20,7 +20,7 @@ Status values: `open`, `retired`, `realised`, `accepted`.
 | R-008 | Indoor position accuracy insufficient for narrow geometry | medium-high | blocks Stages 8-9 | 8 | 08 | open |
 | R-009 | Door interaction unreliable or non-idempotent | medium | blocks Stage 8 | 9 | 08 | open |
 | R-010 | Stair traversal not repeatable | medium-high | blocks Stage 9 | 10 | 09 | open |
-| R-011 | Loot pickup cannot be verified | medium | weakens Stage 10 acceptance | 11 | 10 | open |
+| R-011 | Loot pickup cannot be verified (no documented weapon feature) | **high** | Stage 10 loses its preferred verification channel | 6 | 10 | open |
 | R-012 | Position update latency causes overshoot | medium | degrades all navigation | 12 | 06-07 | open |
 | R-013 | Recovery masks a systemic failure | medium | false confidence | 13 | 11 | open |
 | R-014 | Game update changes HUD or event schema | low per-week, certain eventually | invalidates profile + routes | 14 | any | open |
@@ -146,10 +146,27 @@ bounded and stop immediately once crossing is confirmed.
 expected Z direction and magnitude; floor advancement requires observed Z
 evidence; forward movement on stairs is always bounded.
 
-## R-011 - Loot verification
-*Mitigation:* a weapon is the first target because weapon state offers
-independent confirmation. Otherwise converging evidence (prompt disappearance,
-UI change) is required, and failed verification is reported rather than assumed.
+## R-011 - Loot verification (likelihood raised at Stage 1)
+The original plan verified pickup through live weapon state, which offers
+independent confirmation of a physical outcome.
+
+**Stage 1 documentation review found no weapon, inventory or equipped-item
+feature in Overwolf's PUBG provider** (see D-019). The 15 documented features
+are `gep_internal`, `kill`, `revived`, `death`, `killer`, `match`, `match_info`,
+`rank`, `counters`, `location`, `me`, `team`, `phase`, `map`, `roster`. The
+closest, `me`, reports `aiming` but not what is held.
+
+*Effect:* Stage 10 loses its strongest verification channel and must fall back
+to converging visual evidence (interaction prompt disappearing, plus a visible
+UI change), which is weaker and more likely to produce false positives.
+
+*Mitigation:* the Stage 1 live probe records **raw** payloads, so if the
+provider emits undocumented keys they will be visible in `events.jsonl` without
+another live session. If none appear, Stage 10's acceptance criteria are
+re-derived from what can actually be verified, and the change is recorded rather
+than the criteria being quietly softened.
+
+*Detection:* Stage 1 raw event dump; Stage 10 verification failures.
 
 ## R-012 - Latency-induced overshoot
 Acting on a position that is up to a second old causes overshoot near tight

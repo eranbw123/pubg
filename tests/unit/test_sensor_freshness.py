@@ -27,7 +27,7 @@ def make_snapshot(**overrides) -> SensorSnapshot:
         "monotonic_ts": NOW,
         "bridge_health": BridgeHealth.CONNECTED,
         "map_id": "TRAINING",
-        "phase": MatchPhase.PLAYING,
+        "phase": MatchPhase.LANDED,
         "view": ViewMode.FPP,
         "stance": Stance.STANDING,
         "free_view_active": False,

@@ -175,6 +175,124 @@ Superseded in part by D-015: detection is now registry-based, not path-based.
 
 ---
 
+## D-016 - PUBG class ID is 10906, verified two independent ways
+**Stage 01 | active**
+
+The manifest needs the **class** id, not the instance id, and the two differ by
+a factor of ten. Confirmed from both directions rather than trusted once:
+
+- The host's own `%LOCALAPPDATA%\Overwolf\GamesList.*.xml` lists
+  `PLAYERUNKNOWN'S BATTLEGROUNDS` at instance id **109061**. Overwolf's rule is
+  `classId = floor(instanceId / 10)` -> **10906**.
+- Overwolf's official PUBG sample manifest uses `"game_ids": [10906]`.
+
+`isPubg()` in the bridge accepts either shape, because `getRunningGameInfo` and
+`onGameInfoUpdated` return different objects: it prefers `classId` and falls
+back to `floor(id / 10)`. `check-stage-01.ps1` asserts the built manifest
+targets 10906, so a regression here fails the stage rather than producing an app
+that silently never sees the game.
+
+Also present: `PLAYERUNKNOWN'S BATTLEGROUNDS (Test Server)` at 212401 (class
+21240). Not targeted - Training Mode runs in the main client.
+
+---
+
+## D-017 - Register five features; decline the rest explicitly
+**Stage 01 | active**
+
+Overwolf documents 15 PUBG features. We register five: `location`, `me`,
+`phase`, `map`, `match_info`.
+
+The other ten are listed in `DECLINED_FEATURES` with a reason each, and a test
+asserts the combat and roster ones (`kill`, `death`, `killer`, `revived`,
+`roster`, `team`) are never requested. Out-of-scope data is not merely unused -
+it never enters the process. That is a stronger property than filtering later,
+and it is checkable.
+
+---
+
+## D-018 - MatchPhase uses PUBG's own vocabulary
+**Stage 01 | active - supersedes the Stage 0 placeholder**
+
+The Stage 0 enum guessed at `loading/lobby/playing/finished`. PUBG actually
+reports `lobby`, `loading_screen`, `airfield`, `aircraft`, `freefly`, `landed`.
+
+The enum now carries the real values. A generic mapping would have hidden
+exactly what Stage 1 exists to discover: which phase Training Mode reports.
+`ExpectedContext` now defaults to `phases=(LANDED,)` - the only phase in which
+the character is on the ground and controllable.
+
+An undocumented value (plausible in Training Mode) becomes `UNKNOWN` **plus a
+warning**, never a coerced documented value.
+
+---
+
+## D-019 - No documented weapon or inventory feature; Stage 10's plan needs revisiting
+**Stage 01 | active - contradicts a Stage 0 assumption**
+
+The project brief proposed verifying loot pickup via "live weapon state", and
+`SensorSnapshot` carries a `WeaponState` field for it.
+
+Overwolf's documented PUBG feature list contains **no weapon, inventory or
+equipped-item feature**. The 15 features are `gep_internal`, `kill`, `revived`,
+`death`, `killer`, `match`, `match_info`, `rank`, `counters`, `location`, `me`,
+`team`, `phase`, `map`, `roster`. The closest, `me`, exposes `aiming` state but
+not what is held.
+
+Consequences, recorded now rather than discovered at Stage 10:
+
+- `WeaponState` stays in the model but is never populated from the bridge. It is
+  not removed, because Stage 1's live probe may reveal undocumented keys.
+- Risk R-011 (loot verification) is raised: the preferred verification channel
+  appears not to exist, so Stage 10 will likely need converging visual evidence
+  (prompt disappearance plus a UI change) instead.
+
+This is exactly the "record every observed contradiction" case: the assumption
+was reasonable and appears to be wrong, so it is written down before it costs a
+stage.
+
+---
+
+## D-020 - The bridge normalises, but the controller re-derives
+**Stage 01 | active**
+
+Both sides parse the payloads. The bridge's `normalized` field is advisory and
+travels alongside the raw payload; the controller ignores it and re-derives
+everything from `raw` itself.
+
+Two reasons: a bug in the TypeScript normaliser cannot silently become the
+controller's belief, and a recorded run can be re-parsed months later against a
+corrected Python normaliser without re-running the game.
+
+---
+
+## D-021 - Sequence policy is deliberately asymmetric
+**Stage 01 | active**
+
+- **Duplicate** -> dropped and counted. A reconnecting bridge legitimately
+  replays its tail.
+- **Gap** -> accepted and counted. The frames that did arrive are still valid;
+  refusing them would discard good samples to punish a loss we cannot undo.
+- **Regression** -> rejected. Sequence going backwards without a new session
+  means two bridges are feeding one controller, and interleaving their streams
+  would corrupt the trace in a way no later analysis could detect.
+
+---
+
+## D-022 - Toolchain specifics found the hard way
+**Stage 01 | active**
+
+- The Overwolf types package is `@overwolf/types`, not `@types/overwolf`
+  (which does not exist on npm).
+- pnpm 11 requires build scripts to be approved. `esbuild` (a vitest
+  dependency) needs its postinstall, declared in `pnpm-workspace.yaml` under
+  `allowBuilds`. The shipped Overwolf app itself has **no runtime
+  dependencies** - it is plain compiled JavaScript.
+- `overwolf.windows.getMainWindow()` is synchronous and returns the window; it
+  does not take a callback.
+
+---
+
 ## D-015 - Overwolf detection reads the registry; the channel IS checkable
 **Stage 00 | active - corrects D-013**
 

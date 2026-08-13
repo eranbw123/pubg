@@ -79,10 +79,11 @@ def test_unknown_command_exits_with_usage_error() -> None:
     assert excinfo.value.code == 2
 
 
-def test_no_game_touching_commands_are_exposed_yet(capsys) -> None:
-    """Stage 0 must not expose run/record/calibrate commands."""
+def test_only_stage_appropriate_commands_are_exposed(capsys) -> None:
+    """Stage 1 adds a read-only probe; nothing that moves the character exists."""
     with pytest.raises(SystemExit):
         main(["--help"])
     help_text = capsys.readouterr().out
-    for forbidden in ("run", "record", "calibrate", "probe", "arm"):
+    assert "probe" in help_text
+    for forbidden in ("run", "record", "calibrate", "arm", "navigate"):
         assert f" {forbidden} " not in help_text

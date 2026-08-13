@@ -16,6 +16,8 @@ dependencies = [
     "pydantic>=2.9",
     "PyYAML>=6.0",
     "jsonschema>=4.23",
+    # Stage 1: loopback bridge transport.
+    "websockets>=13.0",
 ]
 
 [project.optional-dependencies]
@@ -31,12 +33,9 @@ vision = [
     "opencv-python-headless>=4.10",
     "numpy>=2.1",
 ]
-# Stage 1 (bridge transport).
-bridge = [
-    "websockets>=13.0",
-]
 dev = [
     "pytest>=8.3",
+    "pytest-asyncio>=0.24",
     "ruff>=0.6",
 ]
 
@@ -49,6 +48,8 @@ packages = ["src/pubg_training_bot"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q --strict-markers"
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
 markers = [
     "live: touches the running game; NEVER selected by default (deselect with '-m \"not live\"')",
 ]
