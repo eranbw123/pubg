@@ -1,11 +1,10 @@
 stages:
   '00':
-    accepted_at: null
+    accepted_at: '2026-08-13T15:32:14+00:00'
     blocker: ''
     evidence:
     - reports/stages/stage-00/stage-report.md
-    - reports/stages/stage-00/doctor.txt
-    notes: Implemented and automated-checked; awaiting operator verification of scripts/check-stage-00.ps1
-    status: ready_for_live_test
-    updated_at: '2026-08-13T15:04:04+00:00'
+    notes: 'Operator verified check-stage-00.ps1: AUTOMATED PASS, 202 tests'
+    status: accepted
+    updated_at: '2026-08-13T15:32:14+00:00'
 version: 1

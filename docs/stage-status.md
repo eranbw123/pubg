@@ -3,12 +3,12 @@
 <!-- GENERATED FILE - edit config/stage-state.yaml or src/pubg_training_bot/stages.py
      and regenerate with: pubg-bot stage status --write-docs -->
 
-Generated: 2026-08-13T15:29:08+00:00
-Active stage: **00 - Foundation, scope lock and doctor**
+Generated: 2026-08-13T15:32:14+00:00
+Active stage: **01 - Live Overwolf sensor feasibility**
 
 | Stage | Title | Status | Live test | Accepted | Notes |
 | --- | --- | --- | --- | --- | --- |
-| 00 | Foundation, scope lock and doctor | `ready_for_live_test` | no | - | Implemented and automated-checked; awaiting operator verification of scripts/check-stage-00.ps1 |
+| 00 | Foundation, scope lock and doctor | `accepted` | no | 2026-08-13T15:32:14+00:00 | Operator verified check-stage-00.ps1: AUTOMATED PASS, 202 tests |
 | 01 | Live Overwolf sensor feasibility | `not_started` | yes | - |  |
 | 02 | Live frame-capture feasibility | `not_started` | yes | - |  |
 | 03 | Bounded live input feasibility | `not_started` | yes | - |  |
@@ -24,20 +24,19 @@ Active stage: **00 - Foundation, scope lock and doctor**
 
 ## Acceptance criteria
 
-### Stage 00 - Foundation, scope lock and doctor (`ready_for_live_test`)
+### Stage 00 - Foundation, scope lock and doctor (`accepted`)
 
 Executable foundation with no game access and no possibility of input.
 
-- [ ] project installs and the CLI starts
-- [ ] doctor produces JSON and human-readable output
-- [ ] fake sensor/capture/heading/actuator tests pass
-- [ ] live input is impossible by default (no live actuator registered)
-- [ ] documentation reflects the actual repository
-- [ ] later stages are not implemented
+- [x] project installs and the CLI starts
+- [x] doctor produces JSON and human-readable output
+- [x] fake sensor/capture/heading/actuator tests pass
+- [x] live input is impossible by default (no live actuator registered)
+- [x] documentation reflects the actual repository
+- [x] later stages are not implemented
 
 Evidence:
 - `reports/stages/stage-00/stage-report.md`
-- `reports/stages/stage-00/doctor.txt`
 
 ### Stage 01 - Live Overwolf sensor feasibility (`not_started`)
 
