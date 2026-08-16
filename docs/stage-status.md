@@ -3,13 +3,13 @@
 <!-- GENERATED FILE - edit config/stage-state.yaml or src/pubg_training_bot/stages.py
      and regenerate with: pubg-bot stage status --write-docs -->
 
-Generated: 2026-08-13T15:52:21+00:00
+Generated: 2026-08-16T15:17:20+00:00
 Active stage: **01 - Live Overwolf sensor feasibility**
 
 | Stage | Title | Status | Live test | Accepted | Notes |
 | --- | --- | --- | --- | --- | --- |
 | 00 | Foundation, scope lock and doctor | `accepted` | no | 2026-08-13T15:32:14+00:00 | Operator verified check-stage-00.ps1: AUTOMATED PASS, 202 tests |
-| 01 | Live Overwolf sensor feasibility | `ready_for_live_test` | yes | - | Bridge + receiver implemented; automated checks pass. Awaiting live Training Mode probe. |
+| 01 | Live Overwolf sensor feasibility | `failed` | yes | - | R-002 realised: Overwolf GEP never delivers the 'location' feature (0 occurrences across ~10 probe runs, all game states). Position is the primary sensor; teach-and-repeat cannot function without it. |
 | 02 | Live frame-capture feasibility | `not_started` | yes | - |  |
 | 03 | Bounded live input feasibility | `not_started` | yes | - |  |
 | 04 | Heading and movement calibration | `not_started` | yes | - |  |
@@ -38,7 +38,7 @@ Executable foundation with no game access and no possibility of input.
 Evidence:
 - `reports/stages/stage-00/stage-report.md`
 
-### Stage 01 - Live Overwolf sensor feasibility (`ready_for_live_test`)
+### Stage 01 - Live Overwolf sensor feasibility (`failed`)
 
 Prove what data PUBG Training Mode actually exposes through Overwolf.
 
@@ -51,8 +51,8 @@ Prove what data PUBG Training Mode actually exposes through Overwolf.
 - [ ] no input is generated
 
 Evidence:
-- `reports/stages/stage-01/stage-report.md`
-- `apps/overwolf-bridge/dist`
+- `reports/stages/stage-01`
+- `docs/decisions.md`
 
 ### Stage 02 - Live frame-capture feasibility (`not_started`)
 

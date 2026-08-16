@@ -10,7 +10,7 @@ Status values: `open`, `retired`, `realised`, `accepted`.
 | ID | Risk | Likelihood | Impact | Rank | Stage | Status |
 | --- | --- | --- | --- | --- | --- | --- |
 | R-001 | Overwolf not installed on this host | was certain (observed) | blocked all live stages | - | 01 | **retired** |
-| R-002 | Overwolf exposes no local XYZ in Training Mode | medium | project-ending | 1 | 01 | open |
+| R-002 | Overwolf exposes no local XYZ | was medium | project-ending | 1 | 01 | **REALISED** |
 | R-016 | Overwolf developer access not granted | was high | blocked Stage 1 entirely | - | 01 | **retired** |
 | R-003 | Heading cannot be read reliably from the HUD | medium-high | project-ending | 3 | 04 | open |
 | R-004 | PUBG rejects ordinary bounded OS input | medium | project-ending (no evasion permitted) | 4 | 03 | open |
@@ -102,7 +102,16 @@ environment](https://dev.overwolf.com/ow-native/getting-started/onboarding-resou
 [Enabling and using developer
 tools](https://dev.overwolf.com/ow-native/guides/dev-tools/use-enable-developer-tools/).
 
-## R-002 - No local XYZ in Training Mode
+## R-002 - No local XYZ (REALISED 2026-08-16)
+**This risk materialised and Stage 1 is FAILED.** Overwolf's GEP advertised
+`location` in `supportedFeatures` and never populated it, in any game state,
+across ~10 probe runs and several hundred snapshots. Full evidence and the
+honest caveat about the missing push channel are in `docs/decisions.md` D-026.
+Evidence bundles are preserved under `reports/stages/stage-01/`.
+
+Original analysis follows.
+
+## R-002 - No local XYZ in Training Mode (historical)
 The whole teach-and-repeat design assumes a position reference. Overwolf's PUBG
 provider documents a location payload, but availability in Training Mode
 specifically is unverified.

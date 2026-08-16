@@ -175,6 +175,61 @@ Superseded in part by D-015: detection is now registry-based, not path-based.
 
 ---
 
+## D-026 - R-002 materialised: Overwolf does not provide live position for PUBG
+**Stage 01 | active - STAGE 1 FAILED**
+
+The project's top feasibility risk has been realised. Overwolf's Game Events
+Provider never delivered the `location` feature, in any game state, across the
+whole live session on 2026-08-16.
+
+### Evidence
+
+Roughly ten probe runs, several hundred `getInfo` snapshots, GEP 311.2.2,
+Overwolf 0.309.0.11, across every reachable state - lobby, airfield, aircraft,
+landed, loading_screen, and Training Mode:
+
+| Signal | Observed |
+| --- | --- |
+| `location` | **0 occurrences of any kind** |
+| `onInfoUpdates2` push events | **0, in any run** |
+| `match_info.map` | works: `Range_Main` (Training Mode), `Baltic_Main` (Erangel) |
+| `game_info.phase` | updates in public matches; stuck at `loading_screen` in Training Mode |
+| `me.view` | works (`TPP`) |
+| `me.movement`, `me.bodyPosition` | `null` in Training Mode |
+| `me.health` | stuck at `{"health":0}` throughout |
+
+Registration succeeded every time - often on attempt 1 - and Overwolf itself
+returned `supportedFeatures: ["location","me","phase","map","match_info"]`. The
+feature is advertised as supported and never populated.
+
+The operator moved in both Training Mode and a live match. Position never
+appeared.
+
+### Honest caveat
+
+We never received a single `onInfoUpdates2` event, and I cannot fully explain
+why. Overwolf's own trace confirms the listeners were registered
+(`Game event listener added 'onInfoUpdates2' [PUBG Bridge,background]`). If
+`location` were delivered exclusively by push and never included in `getInfo`,
+a broken push channel alone would produce these symptoms.
+
+That caveat does not change the outcome: with zero push events and zero
+`location` values in hundreds of polled snapshots, there is no path from this
+provider to a live position stream. It does mean the conclusion is "this
+provider does not deliver position to us" rather than a proven statement about
+PUBG's provider in general.
+
+### Consequence
+
+Stage 1 is **FAILED**. Position is the primary sensor for teach-and-repeat; the
+route layer, the waypoint follower, arrival verification and stuck detection all
+consume it. Without it the design does not degrade - it does not function.
+
+Per the operating contract this is a feasibility gate, and the project stops
+here rather than routing around it. No fallback is started speculatively.
+
+---
+
 ## D-024 - Memory reading is refused, permanently, and not for rules reasons
 **Stage 01 | active**
 
