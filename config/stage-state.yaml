@@ -1,0 +1,22 @@
+stages:
+  '00':
+    accepted_at: '2026-08-13T15:32:14+00:00'
+    blocker: ''
+    evidence:
+    - reports/stages/stage-00/stage-report.md
+    notes: 'Operator verified check-stage-00.ps1: AUTOMATED PASS, 202 tests'
+    status: accepted
+    updated_at: '2026-08-13T15:32:14+00:00'
+  '01':
+    accepted_at: null
+    blocker: 'R-002 realised: Overwolf GEP never delivers the ''location'' feature
+      (0 occurrences across ~10 probe runs, all game states). Position is the primary
+      sensor; teach-and-repeat cannot function without it.'
+    evidence:
+    - reports/stages/stage-01
+    - docs/decisions.md
+    notes: Bridge + receiver implemented; automated checks pass. Awaiting live Training
+      Mode probe.
+    status: failed
+    updated_at: '2026-08-16T15:17:20+00:00'
+version: 1

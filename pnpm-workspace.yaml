@@ -1,0 +1,10 @@
+# TypeScript workspace for the Overwolf bridge (apps/overwolf-bridge).
+packages:
+  - "apps/*"
+
+# pnpm 11 requires build scripts to be approved explicitly. esbuild is a vitest
+# dependency and needs its postinstall to fetch the platform binary, or the test
+# runner cannot start. Nothing here runs in the Overwolf app itself - the bridge
+# ships as plain compiled JavaScript with no runtime dependencies.
+allowBuilds:
+  esbuild: true

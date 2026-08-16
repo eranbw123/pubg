@@ -1,0 +1,67 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>PUBG Bridge - debug</title>
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        background: #101014;
+        color: #e8e8ea;
+        margin: 0;
+        padding: 1rem;
+        font-size: 13px;
+      }
+      h1 { font-size: 1.1rem; margin: 0 0 .75rem; }
+      label { display: block; margin: .5rem 0 .15rem; color: #9aa0aa; }
+      input {
+        width: 100%; padding: .4rem; background: #1b1b22; color: #e8e8ea;
+        border: 1px solid #333; border-radius: 4px; box-sizing: border-box;
+      }
+      button {
+        margin-top: .6rem; padding: .45rem .9rem; background: #2b6cb0;
+        color: #fff; border: 0; border-radius: 4px; cursor: pointer;
+      }
+      .grid { display: grid; grid-template-columns: auto 1fr; gap: .2rem .8rem; margin: .8rem 0; }
+      .k { color: #9aa0aa; }
+      .ok { color: #5cd65c; } .bad { color: #ff6b6b; }
+      pre {
+        background: #17171d; border: 1px solid #2a2a33; border-radius: 4px;
+        padding: .5rem; max-height: 180px; overflow: auto; white-space: pre-wrap;
+        word-break: break-all;
+      }
+      .note { color: #7a7f88; font-size: 12px; margin-top: 1rem; }
+    </style>
+  </head>
+  <body>
+    <h1>PUBG Training Bridge</h1>
+
+    <label for="token">Session token (printed by <code>pubg-bot probe sensors</code>)</label>
+    <input id="token" type="text" placeholder="paste the token here" />
+    <label for="port">Controller port</label>
+    <input id="port" type="number" value="17311" />
+    <button id="apply">Save &amp; reconnect</button>
+
+    <div class="grid">
+      <span class="k">connected</span><span id="connected">-</span>
+      <span class="k">authenticated</span><span id="authenticated">-</span>
+      <span class="k">frames sent</span><span id="sent">-</span>
+      <span class="k">queued</span><span id="queued">-</span>
+      <span class="k">reconnects</span><span id="reconnects">-</span>
+      <span class="k">last error</span><span id="lastError">-</span>
+    </div>
+
+    <label>Last payload</label>
+    <pre id="payload">waiting…</pre>
+
+    <label>Log</label>
+    <pre id="log"></pre>
+
+    <p class="note">
+      This app is a sensor. It reads documented game events and forwards them to
+      127.0.0.1 only. It never sends input to the game.
+    </p>
+
+    <script type="module" src="debug.js"></script>
+  </body>
+</html>

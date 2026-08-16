@@ -1,0 +1,89 @@
+# Development GameProfile - UNCALIBRATED.
+#
+# Created at Stage 0 from measured host display metrics so that profile loading,
+# fingerprinting and readiness gating are exercisable offline. Every field that
+# requires observing the running game is null or flagged false, and
+# GameProfile.missing_for_navigation() lists them. Stage 2 replaces the display
+# and crop sections; Stage 4 fills the calibration sections.
+#
+# Schema: schemas/game-profile.schema.json
+
+schema_version: 1
+profile_id: dev-1080p-fpp
+description: >-
+  Development placeholder for a 1920x1080, 100% scaling, single-monitor host in
+  FPP. Not usable for navigation until Stages 2 and 4 fill in the measured
+  sections.
+
+# Observed live in Stage 1; guessing it would poison route validation.
+map_id: null
+
+screen_width: 1920
+screen_height: 1080
+window_rect: null
+dpi_scale: 1.0
+ui_scale: null
+
+# FPP is the MVP default: no third-person camera offset, no character occlusion.
+view: fpp
+fov: null
+mouse_sensitivity: null
+ads_sensitivity: null
+language: en
+
+key_bindings:
+  forward: w
+  backward: s
+  strafe_left: a
+  strafe_right: d
+  interact: f
+  jump: space
+  crouch: left_ctrl
+  sprint: left_shift
+  walk_toggle: left_alt
+  free_look: left_alt
+  inventory: tab
+  map_key: m
+
+capture:
+  provider: none
+  target_fps: 8.0
+  window_title_hint: PLAYERUNKNOWN'S BATTLEGROUNDS
+  process_name_hint: TslGame.exe
+  benchmarked: false
+
+# Crops are null rather than guessed: a plausible-looking wrong rectangle is
+# harder to detect than a missing one.
+compass_crop: null
+interaction_crop: null
+inventory_crop: null
+
+coordinate_transform:
+  m00: 1.0
+  m01: 0.0
+  m10: 0.0
+  m11: 1.0
+  units_per_metre: 1.0
+  z_up_sign: 1
+  fitted: false
+  fit_rmse_deg: null
+  fit_sample_count: 0
+
+movement:
+  walk_units_per_second: null
+  run_units_per_second: null
+  stationary_noise_p95_units: null
+  actuation_latency_s: null
+  measured: false
+
+mouse_turn:
+  degrees_per_unit: null
+  max_pulse_units: 400
+  min_effective_units: 2
+  repeatability_std_deg: null
+  measured: false
+
+notes: >-
+  Host measurements taken at Stage 0: primary display 1920x1080, system DPI 96
+  (scale 1.0), single monitor. Nothing in this file has been checked against a
+  captured game frame.

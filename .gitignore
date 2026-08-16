@@ -1,0 +1,40 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+build/
+dist/
+
+# --- Node / TypeScript ---
+node_modules/
+apps/**/dist/
+*.tsbuildinfo
+
+# --- Secrets / local env ---
+.env
+.env.local
+*.token
+data/local/session-token*
+
+# --- Local runtime data (NEVER commit: contains live screenshots/traces) ---
+data/local/**
+!data/local/**/.gitkeep
+
+# --- Generated reports (evidence is regenerated, not committed) ---
+reports/**
+!reports/.gitkeep
+!reports/stages/.gitkeep
+!reports/runs/.gitkeep
+
+# --- Captures / recordings anywhere ---
+*.raw-capture
+captures/
+recordings/
+
+# Tiny sanitized synthetic fixtures ARE committed on purpose:
+!tests/fixtures/synthetic/**
