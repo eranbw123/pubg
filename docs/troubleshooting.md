@@ -134,6 +134,30 @@ Expected when the pasted token is stale. The bridge deliberately does *not*
 retry after a rejected token: a wrong token is a configuration error, and
 reconnecting in a loop would just hammer the controller.
 
+**Bridge says "PUBG is not running" / "no game info returned" while PUBG is running**
+Overwolf's per-game **overlay is disabled for PUBG**, so Overwolf detects the
+launch, declines to hook the process, releases it, and never opens a game
+session. `getRunningGameInfo` then returns nothing and no GEP data can flow.
+
+Confirm it in Overwolf's own trace log:
+
+```powershell
+$t = Get-ChildItem "$env:LOCALAPPDATA\Overwolf\Log\Trace_*.log" | Sort-Object LastWriteTime -Desc | Select-Object -First 1
+Select-String -Path $t.FullName -Pattern 'Not injecting into|GameInjectionScoringHelper.*BATTLEGROUNDS'
+```
+
+The signature is:
+
+```
+GamesManager - Not injecting into: 109061 because Overlay is disabled
+               for this game under the game settings
+ProcessManager - Releasing '...\TslGame.exe'
+```
+
+Fix: enable the Overwolf overlay for PUBG in Overwolf's settings, then
+**restart PUBG**. The injection decision is made once at process launch, so
+toggling the setting while the game is already running changes nothing.
+
 **Bridge connects but no `location` updates arrive**
 Check the `feature_status` line in the probe output. If `location` registered
 but never updates, that is the finding Stage 1 exists to produce - it is risk
