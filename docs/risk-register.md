@@ -11,7 +11,7 @@ Status values: `open`, `retired`, `realised`, `accepted`.
 | --- | --- | --- | --- | --- | --- | --- |
 | R-001 | Overwolf not installed on this host | was certain (observed) | blocked all live stages | - | 01 | **retired** |
 | R-002 | Overwolf exposes no local XYZ in Training Mode | medium | project-ending | 1 | 01 | open |
-| R-016 | Overwolf developer access not granted (policy: private apps not approved) | **high** | blocks Stage 1 entirely; remedy is outside our control | 2 | 01 | open |
+| R-016 | Overwolf developer access not granted | was high | blocked Stage 1 entirely | - | 01 | **retired** |
 | R-003 | Heading cannot be read reliably from the HUD | medium-high | project-ending | 3 | 04 | open |
 | R-004 | PUBG rejects ordinary bounded OS input | medium | project-ending (no evasion permitted) | 4 | 03 | open |
 | R-005 | Coordinate transform is unstable or non-linear | medium | blocks all navigation | 5 | 04 | open |
@@ -37,7 +37,21 @@ The residual concern - whether developer mode is enabled so an unpacked app can
 be loaded - is tracked separately as R-016, because it is an application setting
 the doctor cannot observe.
 
-## R-016 - Overwolf developer access not granted
+## R-016 - Overwolf developer access (RETIRED)
+**Retired:** the operator's account was approved and the unpacked bridge loads.
+Both halves are now satisfied - Developers channel (verified by the doctor) and
+account whitelisting (verified by the app actually loading).
+
+Worth keeping the history, because the documented policy said this should not
+have been possible: Overwolf's roadmap states private apps are not approved, and
+defines a private app as one "built for the sole purpose of being a faceless
+bridge to another service", which describes this bridge exactly. The written
+policy and the actual outcome differ. Do not treat that as a general rule for
+future requests, and do not rely on it surviving a policy review.
+
+Original analysis follows.
+
+## R-016 - Overwolf developer access not granted (historical)
 Installing Overwolf is not sufficient, and this is **not** a settings toggle.
 Overwolf's documentation states: *"To develop, load or run unpacked or
 unreleased apps, you have to get whitelisted first"*, and separately that
