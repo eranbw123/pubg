@@ -55,7 +55,38 @@ UNDOCUMENTED_PHASE: dict[str, Any] = {
     "feature": "phase",
 }
 
+#: Captured live from GEP 311.2.2 on 2026-08-16. The documented shape and the
+#: real one differ in two ways that broke normalisation:
+#:   * the map arrives as `match_info.map` (internal name), not a `map` section
+#:   * the phase arrives as `game_info.phase`, not a `phase` section
+#: `me` also has no `stance` key in this version, and its booleans are strings.
+#: Roster entries are redacted by the bridge before they ever reach the
+#: controller, so the placeholder key is what a real bundle contains.
+LIVE_GETINFO_AIRCRAFT: dict[str, Any] = {
+    "success": True,
+    "status": "success",
+    "res": {
+        "game_info": {"phase": "aircraft", "safe_zone": None, "blue_zone": None},
+        "gep_internal": {"version_info": '{"local_version":"311.2.2","is_updated":true}'},
+        "me": {
+            "movement": "normal",
+            "bodyPosition": "straight",
+            "inVehicle": "false",
+            "view": "TPP",
+            "health": '{"health":0,"ko_health":100}',
+            "freeView": "false",
+        },
+        "match_info": {
+            "map": "Baltic_Main",
+            "mode": "solo",
+            "total_teams": "100",
+            "_roster_entries_redacted": 101,
+        },
+    },
+}
+
 __all__ = [
+    "LIVE_GETINFO_AIRCRAFT",
     "GET_INFO_SNAPSHOT",
     "LOCATION_UPDATE",
     "MALFORMED_LOCATION",

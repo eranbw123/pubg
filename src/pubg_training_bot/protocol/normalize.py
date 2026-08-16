@@ -170,7 +170,15 @@ def normalize_update(raw: dict[str, Any]) -> NormalizedUpdate:
     if "location" in location_section:
         result.position = normalize_location(location_section["location"], result.warnings)
 
+    # Observed live (GEP 311.2.2): the map arrives as `match_info.map`, not as a
+    # standalone `map` section, and the value is an internal name
+    # ("Baltic_Main" for Erangel). The documented `map` feature is still checked
+    # first in case it returns in a later provider version.
     map_section = sections.get("map", {})
+    if "map" not in map_section:
+        match_info = sections.get("match_info", {})
+        if isinstance(match_info.get("map"), str):
+            map_section = {"map": match_info["map"]}
     if "map" in map_section:
         raw_map = map_section["map"]
         if isinstance(raw_map, str) and raw_map.strip():
@@ -180,7 +188,13 @@ def normalize_update(raw: dict[str, Any]) -> NormalizedUpdate:
                 ParseWarning(field="map", code="map_not_a_string", detail=repr(raw_map)[:160])
             )
 
+    # Observed live: phase arrives as `game_info.phase`, not a standalone
+    # `phase` section. Documented location checked first, as above.
     phase_section = sections.get("phase", {})
+    if "phase" not in phase_section:
+        game_info = sections.get("game_info", {})
+        if game_info.get("phase") is not None:
+            phase_section = {"phase": game_info["phase"]}
     if "phase" in phase_section:
         raw_phase = str(phase_section["phase"]).strip().lower()
         try:

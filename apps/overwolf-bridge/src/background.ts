@@ -55,6 +55,19 @@ const GAME_POLL_MS = 5000;
 let gamePollTimer: ReturnType<typeof setInterval> | null = null;
 let gameCheckLogs = 0;
 
+/**
+ * How often to take a full `getInfo` snapshot once features are registered.
+ *
+ * `onInfoUpdates2` only fires on *change*, so a session that is registered but
+ * idle looks identical to one that is broken. A periodic snapshot distinguishes
+ * them: it reports what the provider currently knows regardless of whether
+ * anything changed, and it is the only way to see state without a live probe
+ * attached, because the summary goes to the Overwolf app log too.
+ */
+const INFO_POLL_MS = 3000;
+let infoPollTimer: ReturnType<typeof setInterval> | null = null;
+let lastInfoSummary = '';
+
 const sessionId = `ow-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 
 function token(): string {
@@ -94,11 +107,37 @@ function startTransport(overwolfVersion: string): void {
   log(`connecting to ws://127.0.0.1:${port()}`);
 }
 
+/**
+ * Strip other players' data before it ever leaves this process.
+ *
+ * We deliberately do not request the `roster` or `team` features, but the
+ * `match_info` feature carries `roster_0..roster_N` anyway - in a public match
+ * that is 100 real players' names. We need `match_info` only for `map`, and
+ * this project has no business storing anyone else's data in a run bundle.
+ *
+ * This is the single exception to "preserve the raw payload verbatim", and it
+ * is recorded rather than silent: the count of removed keys is substituted in
+ * their place, so a reader of the bundle can see redaction happened.
+ */
+function redactOtherPlayers(raw: Record<string, unknown>): Record<string, unknown> {
+  const container = (raw['res'] ?? raw['info']) as Record<string, unknown> | undefined;
+  const matchInfo = container?.['match_info'] as Record<string, unknown> | undefined;
+  if (!matchInfo) return raw;
+
+  const rosterKeys = Object.keys(matchInfo).filter((key) => key.startsWith('roster'));
+  if (rosterKeys.length === 0) return raw;
+
+  for (const key of rosterKeys) delete matchInfo[key];
+  matchInfo['_roster_entries_redacted'] = rosterKeys.length;
+  return raw;
+}
+
 function forward(
   type: 'info_update' | 'game_event' | 'game_info',
-  raw: Record<string, unknown>,
+  rawInput: Record<string, unknown>,
   feature: string | null,
 ): void {
+  const raw = redactOtherPlayers(rawInput);
   let normalized: Record<string, unknown> | null = null;
   try {
     normalized = normalize(raw) as unknown as Record<string, unknown>;
@@ -107,6 +146,33 @@ function forward(
   }
   transport?.send(type, raw, normalized, feature);
   window.dispatchEvent(new CustomEvent('bridge-payload', { detail: { type, raw, normalized } }));
+}
+
+/**
+ * Take a `getInfo` snapshot, forward it, and log a one-line summary of which
+ * sections the provider actually returned.
+ *
+ * The summary is deliberately terse and only logged when it *changes*, so the
+ * Overwolf app log stays readable while still recording every state transition.
+ */
+function pollInfo(): void {
+  overwolf.games.events.getInfo((info) => {
+    forward('game_info', info as unknown as Record<string, unknown>, null);
+
+    const result = info as unknown as { res?: Record<string, unknown>; success?: boolean };
+    const sections = result?.res ? Object.keys(result.res) : [];
+    const location = (result?.res?.['location'] as Record<string, unknown> | undefined)?.[
+      'location'
+    ];
+    const summary =
+      `getInfo success=${String(result?.success)} sections=[${sections.join(',')}]` +
+      (location === undefined ? ' location=ABSENT' : ` location=${String(location)}`);
+
+    if (summary !== lastInfoSummary) {
+      lastInfoSummary = summary;
+      log(summary);
+    }
+  });
 }
 
 function scheduleRegisterRetry(): void {
@@ -160,9 +226,10 @@ function registerFeatures(): void {
     if (result.success) {
       registered = true;
       log(`features registered on attempt ${attempts}`);
-      overwolf.games.events.getInfo((info) => {
-        forward('game_info', info as unknown as Record<string, unknown>, null);
-      });
+      pollInfo();
+      if (infoPollTimer === null) {
+        infoPollTimer = setInterval(pollInfo, INFO_POLL_MS);
+      }
       return;
     }
 
@@ -189,6 +256,11 @@ function onGameRunning(running: boolean, overwolfVersion: string): void {
       clearTimeout(registerTimer);
       registerTimer = null;
     }
+    if (infoPollTimer !== null) {
+      clearInterval(infoPollTimer);
+      infoPollTimer = null;
+    }
+    lastInfoSummary = '';
     log('PUBG is not running - polling every 5s until it is');
     return;
   }

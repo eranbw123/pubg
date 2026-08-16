@@ -154,6 +154,45 @@ def test_required_features_are_documented_ones(feature: str) -> None:
     assert feature in documented
 
 
+def test_live_payload_shape_differs_from_the_documentation() -> None:
+    """Captured from GEP 311.2.2 in a real session.
+
+    The docs describe standalone `map` and `phase` features; the provider
+    actually delivers `match_info.map` and `game_info.phase`. Normalising only
+    the documented shape silently produced "no map, no phase" against a live
+    game, so the real shape is pinned here.
+    """
+    result = normalize_update(payloads.LIVE_GETINFO_AIRCRAFT)
+    assert result.map_id == "Baltic_Main"
+    assert result.phase is MatchPhase.AIRCRAFT
+    assert result.view is ViewMode.TPP
+    assert result.movement is MovementState.WALKING
+    assert result.free_view is False
+    assert result.warnings == [], "the real payload must parse without warnings"
+
+
+def test_live_payload_has_no_position_while_in_the_aircraft() -> None:
+    """`location` is genuinely absent before landing - the controller must
+    report that as missing rather than inventing a position."""
+    assert normalize_update(payloads.LIVE_GETINFO_AIRCRAFT).position is None
+
+
+def test_documented_shape_still_wins_when_present() -> None:
+    """A later provider version may restore the documented sections; both are
+    accepted, with the documented one taking precedence."""
+    both = {
+        "res": {
+            "map": {"map": "Desert_Main"},
+            "match_info": {"map": "Baltic_Main"},
+            "phase": {"phase": "landed"},
+            "game_info": {"phase": "aircraft"},
+        }
+    }
+    result = normalize_update(both)
+    assert result.map_id == "Desert_Main"
+    assert result.phase is MatchPhase.LANDED
+
+
 def test_combat_and_roster_features_are_explicitly_declined() -> None:
     """Out-of-scope data is not merely unused - it is never requested."""
     for feature in ("kill", "death", "killer", "roster", "team"):
