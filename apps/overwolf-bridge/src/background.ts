@@ -42,6 +42,19 @@ let attempts = 0;
 let gameRunning = false;
 let registerTimer: ReturnType<typeof setTimeout> | null = null;
 
+/**
+ * How often to re-check whether PUBG is running.
+ *
+ * `onGameInfoUpdated` only fires on *changes*, so an app loaded while the game
+ * is already running never receives one, and a single startup call to
+ * `getRunningGameInfo` is a race against Overwolf's own game detection. Relying
+ * on either alone makes the bridge depend on the operator's startup order,
+ * which is exactly the failure this poll removes.
+ */
+const GAME_POLL_MS = 5000;
+let gamePollTimer: ReturnType<typeof setInterval> | null = null;
+let gameCheckLogs = 0;
+
 const sessionId = `ow-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 
 function token(): string {
@@ -176,7 +189,7 @@ function onGameRunning(running: boolean, overwolfVersion: string): void {
       clearTimeout(registerTimer);
       registerTimer = null;
     }
-    log('PUBG is not running');
+    log('PUBG is not running - polling every 5s until it is');
     return;
   }
   const wasRunning = gameRunning;
@@ -244,9 +257,29 @@ function bootstrap(): void {
     // Always surface the UI on launch: the token has to be entered by hand, and
     // an app whose only window is the background page cannot receive it.
     openDebugWindow();
-    overwolf.games.getRunningGameInfo((info) => {
-      onGameRunning(isPubg(info) && info?.isRunning === true, version);
-    });
+    const checkRunningGame = (): void => {
+      overwolf.games.getRunningGameInfo((info) => {
+        const detected = isPubg(info) && info?.isRunning === true;
+        // Log the first few raw results: if detection ever fails again, the
+        // reason (wrong class id? isRunning false? null info?) is on disk.
+        if (!detected && gameCheckLogs < 4) {
+          gameCheckLogs += 1;
+          const shape = info
+            ? `id=${info.id} classId=${(info as { classId?: number }).classId} ` +
+              `isRunning=${info.isRunning} title=${info.title ?? '?'}`
+            : 'no game info returned';
+          log(`game check: not PUBG yet (${shape})`);
+        }
+        if (detected) onGameRunning(true, version);
+      });
+    };
+
+    checkRunningGame();
+    // Poll as well as listen: neither mechanism alone survives every ordering.
+    gamePollTimer = setInterval(() => {
+      if (!gameRunning || !registered) checkRunningGame();
+    }, GAME_POLL_MS);
+
     overwolf.games.onGameInfoUpdated.addListener((update) => {
       if (!isPubg(update.gameInfo)) return;
       onGameRunning(update.gameInfo?.isRunning === true, version);
