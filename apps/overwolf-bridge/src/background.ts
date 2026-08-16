@@ -21,15 +21,26 @@ const TOKEN_STORAGE_KEY = 'pubg-bridge-token';
 const PORT_STORAGE_KEY = 'pubg-bridge-port';
 const DEFAULT_PORT = 17311;
 
-/** Registration is retried: the provider is not always ready the instant the
- *  game reports as running, and a single failed attempt would leave the bridge
- *  silently receiving nothing. */
-const REGISTER_MAX_ATTEMPTS = 12;
+/**
+ * Feature registration retries for as long as PUBG is running.
+ *
+ * The provider reports "Not in a game." while the player sits in the menus, and
+ * that is a *transient* state which clears on entering a match or Training
+ * Mode - not a failure. An earlier version gave up after 12 attempts (~30s),
+ * which meant registration was already dead by the time the operator finished
+ * loading in, and never resumed. There is no attempt cap now: the only thing
+ * that stops the retry loop is the game exiting.
+ */
 const REGISTER_RETRY_MS = 2500;
+/** "Not in a game." is expected in menus; log it occasionally, not every time. */
+const NOT_IN_GAME_LOG_EVERY = 8;
+const NOT_IN_GAME_ERRORS = ['not in a game', 'game is not running'];
 
 let transport: BridgeTransport | null = null;
 let registered = false;
 let attempts = 0;
+let gameRunning = false;
+let registerTimer: ReturnType<typeof setTimeout> | null = null;
 
 const sessionId = `ow-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 
@@ -85,8 +96,21 @@ function forward(
   window.dispatchEvent(new CustomEvent('bridge-payload', { detail: { type, raw, normalized } }));
 }
 
+function scheduleRegisterRetry(): void {
+  if (registerTimer !== null) clearTimeout(registerTimer);
+  registerTimer = setTimeout(() => {
+    registerTimer = null;
+    registerFeatures();
+  }, REGISTER_RETRY_MS);
+}
+
+function isNotInGame(error: string): boolean {
+  const lowered = error.toLowerCase();
+  return NOT_IN_GAME_ERRORS.some((needle) => lowered.includes(needle));
+}
+
 function registerFeatures(): void {
-  if (registered) return;
+  if (registered || !gameRunning) return;
   attempts += 1;
   overwolf.games.events.setRequiredFeatures([...REQUIRED_FEATURES], (result) => {
     const outcomes: FeatureRegistration[] = [];
@@ -126,25 +150,47 @@ function registerFeatures(): void {
       overwolf.games.events.getInfo((info) => {
         forward('game_info', info as unknown as Record<string, unknown>, null);
       });
-    } else if (attempts < REGISTER_MAX_ATTEMPTS) {
-      log(`feature registration failed (${result.error ?? 'no error'}), retrying`);
-      setTimeout(registerFeatures, REGISTER_RETRY_MS);
-    } else {
-      log(`feature registration gave up after ${attempts} attempts`);
+      return;
     }
+
+    const error = String(result.error ?? 'no error');
+    if (isNotInGame(error)) {
+      // Expected while sitting in the menus. Keep quiet and keep trying:
+      // it clears the moment the player loads into Training Mode or a match.
+      if (attempts === 1 || attempts % NOT_IN_GAME_LOG_EVERY === 0) {
+        log(`waiting for a game session ("${error}") - attempt ${attempts}, still retrying`);
+      }
+    } else {
+      log(`feature registration failed (${error}), retrying`);
+    }
+    scheduleRegisterRetry();
   });
 }
 
 function onGameRunning(running: boolean, overwolfVersion: string): void {
   if (!running) {
+    gameRunning = false;
     registered = false;
     attempts = 0;
+    if (registerTimer !== null) {
+      clearTimeout(registerTimer);
+      registerTimer = null;
+    }
     log('PUBG is not running');
     return;
   }
-  log('PUBG detected');
+  const wasRunning = gameRunning;
+  gameRunning = true;
   startTransport(overwolfVersion);
-  registerFeatures();
+  if (!wasRunning) {
+    log('PUBG detected');
+    attempts = 0;
+    registerFeatures();
+  } else if (!registered && registerTimer === null) {
+    // A game-info update arrived (mode change, match start). If registration is
+    // not yet in flight, take the opportunity to try again immediately.
+    registerFeatures();
+  }
 }
 
 /**
