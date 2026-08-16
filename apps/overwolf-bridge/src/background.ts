@@ -161,6 +161,25 @@ function isPubg(info: { classId?: number; id?: number } | null | undefined): boo
   return classId === PUBG_CLASS_ID;
 }
 
+/**
+ * Open the debug window.
+ *
+ * The dock button launches `start_window`, which is the invisible background
+ * page, so without this the app has no reachable UI at all and the operator
+ * cannot enter the session token.
+ */
+function openDebugWindow(): void {
+  overwolf.windows.obtainDeclaredWindow('debug', (result) => {
+    if (!result.success || !result.window) {
+      log(`could not obtain debug window: ${result.error ?? 'unknown error'}`);
+      return;
+    }
+    overwolf.windows.restore(result.window.id, () => {
+      log('debug window opened');
+    });
+  });
+}
+
 function bootstrap(): void {
   overwolf.games.events.onInfoUpdates2.addListener((update) => {
     forward('info_update', update as unknown as Record<string, unknown>, update.feature ?? null);
@@ -176,6 +195,9 @@ function bootstrap(): void {
   overwolf.extensions.current.getManifest((manifest) => {
     const version = manifest?.meta?.version ?? 'unknown';
     log(`bridge ${version} starting (session ${sessionId})`);
+    // Always surface the UI on launch: the token has to be entered by hand, and
+    // an app whose only window is the background page cannot receive it.
+    openDebugWindow();
     overwolf.games.getRunningGameInfo((info) => {
       onGameRunning(isPubg(info) && info?.isRunning === true, version);
     });

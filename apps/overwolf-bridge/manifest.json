@@ -22,7 +22,6 @@
       },
       "debug": {
         "file": "debug.html",
-        "desktop_only": true,
         "resizable": true,
         "transparent": false,
         "show_in_taskbar": true,
